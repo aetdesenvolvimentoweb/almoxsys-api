@@ -1,3 +1,4 @@
+import { logger } from "@infra/adapters/pino-logger.adapter";
 import { AppError } from "@shared/errors";
 import type { Context, Next } from "hono";
 
@@ -16,7 +17,7 @@ export async function errorHandlerMiddleware(c: Context, next: Next) {
     }
 
     // Erro desconhecido — logar e retornar 500 genérico
-    console.error("Unhandled error:", error);
+    logger.error("Unhandled error", error);
 
     return c.json(
       {
