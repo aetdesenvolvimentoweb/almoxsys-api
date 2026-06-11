@@ -1,3 +1,5 @@
+export type HttpStatusCode = 400 | 401 | 403 | 404 | 409 | 500;
+
 /**
  * Erro base da aplicação. Todos os erros personalizados devem estender esta classe.
  *
@@ -7,7 +9,7 @@
  * @property details - Dados adicionais úteis para debug (nunca expostos em produção)
  */
 export abstract class AppError extends Error {
-  abstract readonly statusCode: number;
+  abstract readonly statusCode: HttpStatusCode;
   abstract readonly code: string;
   readonly details?: Record<string, unknown>;
 

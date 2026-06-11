@@ -3,6 +3,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 import { errorHandlerMiddleware } from "@infra/http/error-handler.middleware";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
+import { getServerPort } from "@shared/config";
 
 const app = new OpenAPIHono();
 
@@ -27,6 +28,6 @@ const postoGraduacaoRoutes = createPostoGraduacaoRoutes(postoGraduacaoRepository
 app.route("/api/v1", postoGraduacaoRoutes);
 
 export default {
-  port: process.env.PORT ?? 3000,
+  port: getServerPort(),
   fetch: app.fetch,
 };

@@ -12,7 +12,7 @@ export async function errorHandlerMiddleware(c: Context, next: Next) {
     await next();
   } catch (error) {
     if (error instanceof AppError) {
-      return c.json(error.toJSON(), error.statusCode as never);
+      return c.json(error.toJSON(), error.statusCode);
     }
 
     // Erro desconhecido — logar e retornar 500 genérico
@@ -23,7 +23,7 @@ export async function errorHandlerMiddleware(c: Context, next: Next) {
         code: "INTERNAL_SERVER_ERROR",
         message: "Erro interno do servidor",
       },
-      500 as never
+      500
     );
   }
 }

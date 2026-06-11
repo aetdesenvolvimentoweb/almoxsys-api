@@ -5,7 +5,7 @@ import { AppError } from "./app.error";
  * um valor único que já existe (ex: email duplicado, abreviatura duplicada).
  */
 export class DuplicateKeyError extends AppError {
-  readonly statusCode = 409;
+  readonly statusCode = 409 as const;
   readonly code = "DUPLICATE_KEY";
 
   constructor(field: string, value: string) {
