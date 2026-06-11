@@ -2,16 +2,18 @@ import type { ILogger } from "@core/ports/logger.port";
 import pino from "pino";
 
 const pinoInstance = pino({
-  level: process.env.LOG_LEVEL || "info",
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      ignore: "pid,hostname",
-      translateTime: "SYS:standard",
-      singleLine: false,
+  level: process.env["LOG_LEVEL"] ?? "info",
+  ...(process.env["NODE_ENV"] !== "production" && {
+    transport: {
+      target: "pino-pretty",
+      options: {
+        colorize: true,
+        ignore: "pid,hostname",
+        translateTime: "SYS:standard",
+        singleLine: false,
+      },
     },
-  },
+  }),
 });
 
 /**
@@ -39,4 +41,4 @@ export class PinoLoggerAdapter implements ILogger {
   }
 }
 
-export const logger = new PinoLoggerAdapter();
+export const logger: ILogger = new PinoLoggerAdapter();

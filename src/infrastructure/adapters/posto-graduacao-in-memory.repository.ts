@@ -1,8 +1,4 @@
-import {
-  AbreviaturaJaExisteError,
-  OrdemJaExisteError,
-  PostoGraduacaoNaoEncontradoError,
-} from "@core/domain/errors/posto-graduacao.errors";
+import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
 import type { PostoGraduacao } from "@core/domain/posto-graduacao.entity";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
 
@@ -10,51 +6,15 @@ export class PostoGraduacaoInMemoryRepository implements IPostoGraduacaoReposito
   private store: Map<string, PostoGraduacao> = new Map();
 
   async criar(posto: PostoGraduacao): Promise<void> {
-    const existeAbreviatura = Array.from(this.store.values()).some(
-      (p) => p.abreviatura === posto.abreviatura
-    );
-    if (existeAbreviatura) {
-      throw new AbreviaturaJaExisteError(posto.abreviatura);
-    }
-
-    const existeOrdem = Array.from(this.store.values()).some((p) => p.ordem === posto.ordem);
-    if (existeOrdem) {
-      throw new OrdemJaExisteError(posto.ordem);
-    }
-
     this.store.set(posto.id, posto);
   }
 
-  async atualizar(id: string, updates: Partial<PostoGraduacao>): Promise<void> {
-    if (!this.store.has(id)) {
-      throw new PostoGraduacaoNaoEncontradoError(id);
+  async atualizar(posto: PostoGraduacao): Promise<void> {
+    if (!this.store.has(posto.id)) {
+      throw new PostoGraduacaoNaoEncontradoError(posto.id);
     }
 
-    if (updates.abreviatura !== undefined) {
-      const outroComAbreviatura = Array.from(this.store.values()).some(
-        (p) => p.id !== id && p.abreviatura === updates.abreviatura
-      );
-      if (outroComAbreviatura) {
-        throw new AbreviaturaJaExisteError(updates.abreviatura);
-      }
-    }
-
-    if (updates.ordem !== undefined) {
-      const outroComOrdem = Array.from(this.store.values()).some(
-        (p) => p.id !== id && p.ordem === updates.ordem
-      );
-      if (outroComOrdem) {
-        throw new OrdemJaExisteError(updates.ordem);
-      }
-    }
-
-    const atual = this.store.get(id);
-    if (!atual) {
-      throw new PostoGraduacaoNaoEncontradoError(id);
-    }
-
-    const atualizado = { ...atual, ...updates };
-    this.store.set(id, atualizado);
+    this.store.set(posto.id, posto);
   }
 
   async excluir(id: string): Promise<void> {

@@ -35,6 +35,9 @@
       },
       "security": {
         "noGlobalEval": "error"
+      },
+      "complexity": {
+        "useLiteralKeys": "off"
       }
     }
   },

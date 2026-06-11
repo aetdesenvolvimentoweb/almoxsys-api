@@ -17,11 +17,9 @@ export interface IPostoGraduacaoRepository {
   /**
    * Atualiza um PostoGraduacao existente.
    *
-   * @throws {PostoGraduacaoNaoEncontradoError} se não encontrado
-   * @throws {AbreviaturaJaExisteError} se nova abreviatura já existe em outro posto
-   * @throws {OrdemJaExisteError} se nova ordem já existe em outro posto
+   * @throws {PostoGraduacaoNaoEncontradoError} se o id não existe
    */
-  atualizar(id: string, updates: Partial<PostoGraduacao>): Promise<void>;
+  atualizar(posto: PostoGraduacao): Promise<void>;
 
   /**
    * Exclui um PostoGraduacao pelo id.

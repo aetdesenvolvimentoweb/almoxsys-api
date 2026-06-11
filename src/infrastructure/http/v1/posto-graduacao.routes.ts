@@ -96,7 +96,7 @@ export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository
     // TODO: autenticação + autorização
     const query = new ListarPostosGraduacaoQuery(repository);
     const result = await query.execute();
-    return c.json(result, 200);
+    return c.json(result);
   });
 
   const buscarPorIdRoute = createRoute({
