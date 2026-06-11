@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { criarPostoGraduacao } from "@core/domain/posto-graduacao.entity";
 import { ValidationError } from "@shared/errors";
 

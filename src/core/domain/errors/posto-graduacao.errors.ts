@@ -1,4 +1,4 @@
-import { NotFoundError, DuplicateKeyError } from "@shared/errors";
+import { DuplicateKeyError, NotFoundError } from "@shared/errors";
 
 /**
  * Erro lançado quando um posto/graduação não é encontrado no repositório.

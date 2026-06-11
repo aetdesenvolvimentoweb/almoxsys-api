@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { AtualizarPostoGraduacaoCommand } from "@core/application/commands/atualizar-posto-graduacao.command";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
-import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 import {
-  PostoGraduacaoNaoEncontradoError,
   AbreviaturaJaExisteError,
   OrdemJaExisteError,
+  PostoGraduacaoNaoEncontradoError,
 } from "@core/domain/errors/posto-graduacao.errors";
+import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 
 describe("AtualizarPostoGraduacaoCommand", () => {
   let repository: PostoGraduacaoInMemoryRepository;
@@ -59,24 +59,22 @@ describe("AtualizarPostoGraduacaoCommand", () => {
       updateCommand.execute({
         id: "00000000-0000-0000-0000-000000000000",
         abreviatura: "Cap",
-      }),
+      })
     ).rejects.toThrow(PostoGraduacaoNaoEncontradoError);
   });
 
   it("rejeita abreviatura duplicada em outro posto", async () => {
     await createCommand.execute({ abreviatura: "TC", ordem: 2 });
 
-    expect(
-      updateCommand.execute({ id: postoId, abreviatura: "TC" }),
-    ).rejects.toThrow(AbreviaturaJaExisteError);
+    expect(updateCommand.execute({ id: postoId, abreviatura: "TC" })).rejects.toThrow(
+      AbreviaturaJaExisteError
+    );
   });
 
   it("rejeita ordem duplicada em outro posto", async () => {
     await createCommand.execute({ abreviatura: "TC", ordem: 2 });
 
-    expect(
-      updateCommand.execute({ id: postoId, ordem: 2 }),
-    ).rejects.toThrow(OrdemJaExisteError);
+    expect(updateCommand.execute({ id: postoId, ordem: 2 })).rejects.toThrow(OrdemJaExisteError);
   });
 
   it("permite manter mesma abreviatura e ordem do próprio posto", async () => {

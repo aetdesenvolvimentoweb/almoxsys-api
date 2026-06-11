@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { ValidationError } from "@shared/errors";
 
 /**
@@ -24,9 +24,7 @@ export interface CriarPostoGraduacaoInput {
  *
  * @throws {ValidationError} se abreviatura estiver vazia ou ordem for negativa/zero
  */
-export function criarPostoGraduacao(
-  input: CriarPostoGraduacaoInput,
-): PostoGraduacao {
+export function criarPostoGraduacao(input: CriarPostoGraduacaoInput): PostoGraduacao {
   const { abreviatura, ordem } = input;
 
   if (!abreviatura || abreviatura.trim().length === 0) {

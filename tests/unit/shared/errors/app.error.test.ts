@@ -1,5 +1,5 @@
-import { describe, it, expect } from "bun:test";
-import { AppError, ValidationError, DuplicateKeyError, NotFoundError } from "@shared/errors";
+import { describe, expect, it } from "bun:test";
+import { DuplicateKeyError, NotFoundError, ValidationError } from "@shared/errors";
 
 describe("AppError", () => {
   it("serializa erro com code e message", () => {

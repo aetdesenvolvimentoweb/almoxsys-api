@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { ExcluirPostoGraduacaoCommand } from "@core/application/commands/excluir-posto-graduacao.command";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
-import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+import { ExcluirPostoGraduacaoCommand } from "@core/application/commands/excluir-posto-graduacao.command";
 import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
+import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 
 describe("ExcluirPostoGraduacaoCommand", () => {
   let repository: PostoGraduacaoInMemoryRepository;
@@ -23,16 +23,14 @@ describe("ExcluirPostoGraduacaoCommand", () => {
 
     await deleteCommand.execute({ id: result.id });
 
-    expect(
-      repository.buscarPorId(result.id),
-    ).rejects.toThrow(PostoGraduacaoNaoEncontradoError);
+    expect(repository.buscarPorId(result.id)).rejects.toThrow(PostoGraduacaoNaoEncontradoError);
   });
 
   it("rejeita exclusão de ID inexistente", async () => {
     expect(
       deleteCommand.execute({
         id: "00000000-0000-0000-0000-000000000000",
-      }),
+      })
     ).rejects.toThrow(PostoGraduacaoNaoEncontradoError);
   });
 
@@ -57,17 +55,13 @@ describe("ExcluirPostoGraduacaoCommand", () => {
   });
 
   it("exclui múltiplos postos independentemente", async () => {
-    const id1 = (
-      await createCommand.execute({ abreviatura: "Cel", ordem: 1 })
-    ).id;
-    const id2 = (
-      await createCommand.execute({ abreviatura: "TC", ordem: 2 })
-    ).id;
+    const id1 = (await createCommand.execute({ abreviatura: "Cel", ordem: 1 })).id;
+    const id2 = (await createCommand.execute({ abreviatura: "TC", ordem: 2 })).id;
 
     await deleteCommand.execute({ id: id1 });
 
     const remaining = await repository.listar();
     expect(remaining).toHaveLength(1);
-    expect(remaining[0].id).toBe(id2);
+    expect(remaining.at(0)?.id).toBe(id2);
   });
 });

@@ -8,9 +8,7 @@ export class ForbiddenError extends AppError {
   readonly statusCode = 403;
   readonly code = "FORBIDDEN";
 
-  constructor(
-    message: string = "Você não tem permissão para acessar este recurso",
-  ) {
+  constructor(message: string = "Você não tem permissão para acessar este recurso") {
     super(message);
   }
 }

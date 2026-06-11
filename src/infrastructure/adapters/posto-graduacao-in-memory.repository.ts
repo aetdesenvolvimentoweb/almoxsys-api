@@ -1,26 +1,23 @@
-import type { PostoGraduacao } from "@core/domain/posto-graduacao.entity";
 import {
   AbreviaturaJaExisteError,
   OrdemJaExisteError,
   PostoGraduacaoNaoEncontradoError,
 } from "@core/domain/errors/posto-graduacao.errors";
+import type { PostoGraduacao } from "@core/domain/posto-graduacao.entity";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
 
-export class PostoGraduacaoInMemoryRepository
-  implements IPostoGraduacaoRepository {
+export class PostoGraduacaoInMemoryRepository implements IPostoGraduacaoRepository {
   private store: Map<string, PostoGraduacao> = new Map();
 
   async criar(posto: PostoGraduacao): Promise<void> {
     const existeAbreviatura = Array.from(this.store.values()).some(
-      (p) => p.abreviatura === posto.abreviatura,
+      (p) => p.abreviatura === posto.abreviatura
     );
     if (existeAbreviatura) {
       throw new AbreviaturaJaExisteError(posto.abreviatura);
     }
 
-    const existeOrdem = Array.from(this.store.values()).some(
-      (p) => p.ordem === posto.ordem,
-    );
+    const existeOrdem = Array.from(this.store.values()).some((p) => p.ordem === posto.ordem);
     if (existeOrdem) {
       throw new OrdemJaExisteError(posto.ordem);
     }
@@ -35,7 +32,7 @@ export class PostoGraduacaoInMemoryRepository
 
     if (updates.abreviatura !== undefined) {
       const outroComAbreviatura = Array.from(this.store.values()).some(
-        (p) => p.id !== id && p.abreviatura === updates.abreviatura,
+        (p) => p.id !== id && p.abreviatura === updates.abreviatura
       );
       if (outroComAbreviatura) {
         throw new AbreviaturaJaExisteError(updates.abreviatura);
@@ -44,14 +41,18 @@ export class PostoGraduacaoInMemoryRepository
 
     if (updates.ordem !== undefined) {
       const outroComOrdem = Array.from(this.store.values()).some(
-        (p) => p.id !== id && p.ordem === updates.ordem,
+        (p) => p.id !== id && p.ordem === updates.ordem
       );
       if (outroComOrdem) {
         throw new OrdemJaExisteError(updates.ordem);
       }
     }
 
-    const atual = this.store.get(id)!;
+    const atual = this.store.get(id);
+    if (!atual) {
+      throw new PostoGraduacaoNaoEncontradoError(id);
+    }
+
     const atualizado = { ...atual, ...updates };
     this.store.set(id, atualizado);
   }
@@ -73,9 +74,7 @@ export class PostoGraduacaoInMemoryRepository
     return posto;
   }
 
-  async buscarPorAbreviatura(
-    abreviatura: string,
-  ): Promise<PostoGraduacao | null> {
+  async buscarPorAbreviatura(abreviatura: string): Promise<PostoGraduacao | null> {
     const postos = Array.from(this.store.values());
     return postos.find((p) => p.abreviatura === abreviatura) ?? null;
   }

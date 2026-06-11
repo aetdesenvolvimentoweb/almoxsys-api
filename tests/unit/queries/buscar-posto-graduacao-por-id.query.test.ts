@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { BuscarPostoGraduacaoPorIdQuery } from "@core/application/queries/buscar-posto-graduacao-por-id.query";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
-import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+import { BuscarPostoGraduacaoPorIdQuery } from "@core/application/queries/buscar-posto-graduacao-por-id.query";
 import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
+import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 
 describe("BuscarPostoGraduacaoPorIdQuery", () => {
   let repository: PostoGraduacaoInMemoryRepository;
@@ -32,20 +32,14 @@ describe("BuscarPostoGraduacaoPorIdQuery", () => {
     expect(
       query.execute({
         id: "00000000-0000-0000-0000-000000000000",
-      }),
+      })
     ).rejects.toThrow(PostoGraduacaoNaoEncontradoError);
   });
 
   it("encontra corretamente entre múltiplos postos", async () => {
-    const id1 = (
-      await createCommand.execute({ abreviatura: "Cel", ordem: 1 })
-    ).id;
-    const id2 = (
-      await createCommand.execute({ abreviatura: "TC", ordem: 2 })
-    ).id;
-    const id3 = (
-      await createCommand.execute({ abreviatura: "Maj", ordem: 3 })
-    ).id;
+    await createCommand.execute({ abreviatura: "Cel", ordem: 1 });
+    const id2 = (await createCommand.execute({ abreviatura: "TC", ordem: 2 })).id;
+    await createCommand.execute({ abreviatura: "Maj", ordem: 3 });
 
     const result = await query.execute({ id: id2 });
 

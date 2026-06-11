@@ -1,11 +1,11 @@
-import { z } from "zod";
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
-import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
 import { AtualizarPostoGraduacaoCommand } from "@core/application/commands/atualizar-posto-graduacao.command";
+import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
 import { ExcluirPostoGraduacaoCommand } from "@core/application/commands/excluir-posto-graduacao.command";
-import { ListarPostosGraduacaoQuery } from "@core/application/queries/listar-postos-graduacao.query";
 import { BuscarPostoGraduacaoPorIdQuery } from "@core/application/queries/buscar-posto-graduacao-por-id.query";
+import { ListarPostosGraduacaoQuery } from "@core/application/queries/listar-postos-graduacao.query";
+import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { z } from "zod";
 
 const PostoGraduacaoSchema = z.object({
   id: z.string().uuid(),
@@ -27,9 +27,7 @@ const IdParamSchema = z.object({
   id: z.string().uuid(),
 });
 
-export function createPostoGraduacaoRoutes(
-  repository: IPostoGraduacaoRepository,
-) {
+export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository) {
   const router = new OpenAPIHono();
 
   const criarRoute = createRoute({
@@ -57,8 +55,7 @@ export function createPostoGraduacaoRoutes(
         },
       },
       409: {
-        description:
-          "Abreviatura ou ordem já existem no sistema (conflito de unicidade)",
+        description: "Abreviatura ou ordem já existem no sistema (conflito de unicidade)",
         content: {
           "application/json": {
             schema: z.object({ message: z.string() }),
@@ -173,8 +170,7 @@ export function createPostoGraduacaoRoutes(
         },
       },
       409: {
-        description:
-          "Abreviatura ou ordem já existem em outro posto (conflito de unicidade)",
+        description: "Abreviatura ou ordem já existem em outro posto (conflito de unicidade)",
         content: {
           "application/json": {
             schema: z.object({ message: z.string() }),

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "bun:test";
-import { ListarPostosGraduacaoQuery } from "@core/application/queries/listar-postos-graduacao.query";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
+import { ListarPostosGraduacaoQuery } from "@core/application/queries/listar-postos-graduacao.query";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 
 describe("ListarPostosGraduacaoQuery", () => {
@@ -26,8 +26,8 @@ describe("ListarPostosGraduacaoQuery", () => {
     const result = await query.execute();
 
     expect(result).toHaveLength(1);
-    expect(result[0].abreviatura).toBe("Cel");
-    expect(result[0].ordem).toBe(1);
+    expect(result.at(0)?.abreviatura).toBe("Cel");
+    expect(result.at(0)?.ordem).toBe(1);
   });
 
   it("retorna lista ordenada por ordem ascendente", async () => {
@@ -39,10 +39,10 @@ describe("ListarPostosGraduacaoQuery", () => {
     const result = await query.execute();
 
     expect(result).toHaveLength(4);
-    expect(result[0].ordem).toBe(1);
-    expect(result[1].ordem).toBe(2);
-    expect(result[2].ordem).toBe(3);
-    expect(result[3].ordem).toBe(5);
+    expect(result.at(0)?.ordem).toBe(1);
+    expect(result.at(1)?.ordem).toBe(2);
+    expect(result.at(2)?.ordem).toBe(3);
+    expect(result.at(3)?.ordem).toBe(5);
   });
 
   it("retorna lista correta mesmo quando inseridos fora de ordem", async () => {
@@ -52,8 +52,8 @@ describe("ListarPostosGraduacaoQuery", () => {
 
     const result = await query.execute();
 
-    expect(result[0].abreviatura).toBe("Cap");
-    expect(result[1].abreviatura).toBe("Cel");
-    expect(result[2].abreviatura).toBe("Maj");
+    expect(result.at(0)?.abreviatura).toBe("Cap");
+    expect(result.at(1)?.abreviatura).toBe("Cel");
+    expect(result.at(2)?.abreviatura).toBe("Maj");
   });
 });
