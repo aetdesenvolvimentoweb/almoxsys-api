@@ -2,18 +2,14 @@
 
 ## Visão Geral
 
-Sistema de controle de almoxarifado, estoque e inventário desenvolvido para uso em Organizações Bombeiro Militar. Permite o gerenciamento centralizado de múltiplos almoxarifados com controle de acesso por perfil de usuário.
+Sistema de controle de almoxarifado, estoque e inventário desenvolvido para Organizações Bombeiro Militar. Permite o gerenciamento centralizado de múltiplos almoxarifados com controle de acesso por perfil de usuário.
 
 ---
 
 ## Domínios do Sistema
 
-### Organização
-- Entidade raiz do sistema.
-- Pode possuir múltiplos almoxarifados.
-
 ### Almoxarifado
-- Unidade principal de armazenamento, vinculada a uma organização.
+- Entidade raiz do sistema — unidade principal de armazenamento.
 - Possui um ou mais Almoxarifes responsáveis.
 
 ### Divisão
@@ -59,7 +55,7 @@ Sistema de controle de almoxarifado, estoque e inventário desenvolvido para uso
 ## Funcionalidades Principais
 
 - **Controle de acesso** baseado em perfis (RBAC)
-- **Gestão de almoxarifados** — criação, edição e vinculação a organizações
+- **Gestão de almoxarifados** — criação e edição
 - **Gestão de divisões** — organização física interna do almoxarifado
 - **Gestão de categorias** — classificação dos itens
 - **Gestão de materiais/equipamentos** — cadastro, atualização e controle de estoque
