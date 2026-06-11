@@ -1,10 +1,11 @@
+import { NotFoundError, DuplicateKeyError } from "@shared/errors";
+
 /**
  * Erro lançado quando um posto/graduação não é encontrado no repositório.
  */
-export class PostoGraduacaoNaoEncontradoError extends Error {
+export class PostoGraduacaoNaoEncontradoError extends NotFoundError {
   constructor(id: string) {
-    super(`PostoGraduacao com id '${id}' não encontrado`);
-    this.name = "PostoGraduacaoNaoEncontradoError";
+    super("PostoGraduacao", id);
   }
 }
 
@@ -12,12 +13,9 @@ export class PostoGraduacaoNaoEncontradoError extends Error {
  * Erro lançado quando tenta-se criar ou atualizar um posto com uma abreviatura
  * que já existe no sistema.
  */
-export class AbreviaturaJaExisteError extends Error {
+export class AbreviaturaJaExisteError extends DuplicateKeyError {
   constructor(abreviatura: string) {
-    super(
-      `PostoGraduacao com abreviatura '${abreviatura}' já existe no sistema`,
-    );
-    this.name = "AbreviaturaJaExisteError";
+    super("Abreviatura", abreviatura);
   }
 }
 
@@ -25,9 +23,8 @@ export class AbreviaturaJaExisteError extends Error {
  * Erro lançado quando tenta-se criar ou atualizar um posto com uma ordem
  * que já existe no sistema.
  */
-export class OrdemJaExisteError extends Error {
+export class OrdemJaExisteError extends DuplicateKeyError {
   constructor(ordem: number) {
-    super(`PostoGraduacao com ordem '${ordem}' já existe no sistema`);
-    this.name = "OrdemJaExisteError";
+    super("Ordem", ordem.toString());
   }
 }
