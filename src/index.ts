@@ -2,8 +2,11 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
+import { errorHandlerMiddleware } from "@infra/http/error-handler.middleware";
 
 const app = new OpenAPIHono();
+
+app.use(errorHandlerMiddleware);
 
 app.doc("/api/docs/spec", {
   openapi: "3.0.0",

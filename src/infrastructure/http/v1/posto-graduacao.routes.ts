@@ -6,11 +6,6 @@ import { AtualizarPostoGraduacaoCommand } from "@core/application/commands/atual
 import { ExcluirPostoGraduacaoCommand } from "@core/application/commands/excluir-posto-graduacao.command";
 import { ListarPostosGraduacaoQuery } from "@core/application/queries/listar-postos-graduacao.query";
 import { BuscarPostoGraduacaoPorIdQuery } from "@core/application/queries/buscar-posto-graduacao-por-id.query";
-import {
-  AbreviaturaJaExisteError,
-  OrdemJaExisteError,
-  PostoGraduacaoNaoEncontradoError,
-} from "@core/domain/errors/posto-graduacao.errors";
 
 const PostoGraduacaoSchema = z.object({
   id: z.string().uuid(),
@@ -77,23 +72,9 @@ export function createPostoGraduacaoRoutes(
     // TODO: autenticação + autorização Admin
     const body = c.req.valid("json");
 
-    try {
-      const command = new CriarPostoGraduacaoCommand(repository);
-      const result = await command.execute(body);
-      return c.json(result, 201);
-    } catch (error) {
-      if (
-        error instanceof AbreviaturaJaExisteError ||
-        error instanceof OrdemJaExisteError
-      ) {
-        return c.json(
-          { message: error.message },
-          409,
-        );
-      }
-
-      throw error;
-    }
+    const command = new CriarPostoGraduacaoCommand(repository);
+    const result = await command.execute(body);
+    return c.json(result, 201);
   });
 
   const listarRoute = createRoute({
@@ -153,20 +134,9 @@ export function createPostoGraduacaoRoutes(
     // TODO: autenticação + autorização
     const { id } = c.req.valid("param");
 
-    try {
-      const query = new BuscarPostoGraduacaoPorIdQuery(repository);
-      const result = await query.execute({ id });
-      return c.json(result, 200);
-    } catch (error) {
-      if (error instanceof PostoGraduacaoNaoEncontradoError) {
-        return c.json(
-          { message: error.message },
-          404,
-        );
-      }
-
-      throw error;
-    }
+    const query = new BuscarPostoGraduacaoPorIdQuery(repository);
+    const result = await query.execute({ id });
+    return c.json(result, 200);
   });
 
   const atualizarRoute = createRoute({
@@ -219,30 +189,9 @@ export function createPostoGraduacaoRoutes(
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
-    try {
-      const command = new AtualizarPostoGraduacaoCommand(repository);
-      await command.execute({ id, ...body });
-      return c.json({ message: "Posto/graduação atualizado com sucesso" }, 200);
-    } catch (error) {
-      if (error instanceof PostoGraduacaoNaoEncontradoError) {
-        return c.json(
-          { message: error.message },
-          404,
-        );
-      }
-
-      if (
-        error instanceof AbreviaturaJaExisteError ||
-        error instanceof OrdemJaExisteError
-      ) {
-        return c.json(
-          { message: error.message },
-          409,
-        );
-      }
-
-      throw error;
-    }
+    const command = new AtualizarPostoGraduacaoCommand(repository);
+    await command.execute({ id, ...body });
+    return c.json({ message: "Posto/graduação atualizado com sucesso" }, 200);
   });
 
   const excluirRoute = createRoute({
@@ -273,20 +222,9 @@ export function createPostoGraduacaoRoutes(
     // TODO: autenticação + autorização Admin
     const { id } = c.req.valid("param");
 
-    try {
-      const command = new ExcluirPostoGraduacaoCommand(repository);
-      await command.execute({ id });
-      return c.body(null, 204);
-    } catch (error) {
-      if (error instanceof PostoGraduacaoNaoEncontradoError) {
-        return c.json(
-          { message: error.message },
-          404,
-        );
-      }
-
-      throw error;
-    }
+    const command = new ExcluirPostoGraduacaoCommand(repository);
+    await command.execute({ id });
+    return c.body(null, 204);
   });
 
   return router;
