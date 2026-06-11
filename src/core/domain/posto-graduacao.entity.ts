@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { ValidationError } from "@shared/errors";
 
 /**
  * Representa um posto ou graduação militar no sistema.
@@ -21,7 +22,7 @@ export interface CriarPostoGraduacaoInput {
 /**
  * Cria uma nova entidade PostoGraduacao com validações de domínio.
  *
- * @throws Error se abreviatura estiver vazia ou ordem for negativa/zero
+ * @throws {ValidationError} se abreviatura estiver vazia ou ordem for negativa/zero
  */
 export function criarPostoGraduacao(
   input: CriarPostoGraduacaoInput,
@@ -29,11 +30,16 @@ export function criarPostoGraduacao(
   const { abreviatura, ordem } = input;
 
   if (!abreviatura || abreviatura.trim().length === 0) {
-    throw new Error("Abreviatura não pode estar vazia");
+    throw new ValidationError("Abreviatura não pode estar vazia", {
+      field: "abreviatura",
+    });
   }
 
   if (!Number.isInteger(ordem) || ordem <= 0) {
-    throw new Error("Ordem deve ser um inteiro positivo");
+    throw new ValidationError("Ordem deve ser um inteiro positivo", {
+      field: "ordem",
+      value: ordem,
+    });
   }
 
   return {

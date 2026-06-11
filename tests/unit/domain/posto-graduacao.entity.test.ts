@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { criarPostoGraduacao } from "@core/domain/posto-graduacao.entity";
+import { ValidationError } from "@shared/errors";
 
 describe("PostoGraduacao Entity", () => {
   it("cria um posto válido com UUID gerado", () => {
@@ -19,38 +20,28 @@ describe("PostoGraduacao Entity", () => {
     expect(posto.abreviatura).toBe("TC");
   });
 
-  it("rejeita abreviatura vazia", () => {
+  it("rejeita abreviatura vazia com ValidationError", () => {
     const input = { abreviatura: "", ordem: 1 };
-    expect(() => criarPostoGraduacao(input)).toThrow(
-      "Abreviatura não pode estar vazia",
-    );
+    expect(() => criarPostoGraduacao(input)).toThrow(ValidationError);
   });
 
   it("rejeita abreviatura com apenas espaços", () => {
     const input = { abreviatura: "   ", ordem: 1 };
-    expect(() => criarPostoGraduacao(input)).toThrow(
-      "Abreviatura não pode estar vazia",
-    );
+    expect(() => criarPostoGraduacao(input)).toThrow(ValidationError);
   });
 
-  it("rejeita ordem zero", () => {
+  it("rejeita ordem zero com ValidationError", () => {
     const input = { abreviatura: "Cel", ordem: 0 };
-    expect(() => criarPostoGraduacao(input)).toThrow(
-      "Ordem deve ser um inteiro positivo",
-    );
+    expect(() => criarPostoGraduacao(input)).toThrow(ValidationError);
   });
 
-  it("rejeita ordem negativa", () => {
+  it("rejeita ordem negativa com ValidationError", () => {
     const input = { abreviatura: "Cel", ordem: -5 };
-    expect(() => criarPostoGraduacao(input)).toThrow(
-      "Ordem deve ser um inteiro positivo",
-    );
+    expect(() => criarPostoGraduacao(input)).toThrow(ValidationError);
   });
 
-  it("rejeita ordem com decimais", () => {
+  it("rejeita ordem com decimais com ValidationError", () => {
     const input = { abreviatura: "Cel", ordem: 1.5 };
-    expect(() => criarPostoGraduacao(input)).toThrow(
-      "Ordem deve ser um inteiro positivo",
-    );
+    expect(() => criarPostoGraduacao(input)).toThrow(ValidationError);
   });
 });
