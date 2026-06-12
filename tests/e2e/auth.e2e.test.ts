@@ -51,4 +51,45 @@ describe("Autenticação e proteção de rotas (e2e)", () => {
     });
     expect(res.status).toBe(204);
   });
+
+  it("excesso de tentativas de login retorna 429 (rate limit)", async () => {
+    const ip = "203.0.113.10"; // IP exclusivo deste teste, isola o contador
+    const login = () =>
+      app.request(`${BASE}/auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-forwarded-for": ip },
+        body: JSON.stringify({ rg: 1, senha: "qualquer" }),
+      });
+
+    // 5 tentativas dentro do limite padrão (rejeitadas por credenciais, não por rate limit)
+    for (let i = 0; i < 5; i++) {
+      const res = await login();
+      expect(res.status).not.toBe(429);
+    }
+
+    const blocked = await login();
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("retry-after")).not.toBeNull();
+  });
+
+  it("aplica secure headers nas respostas", async () => {
+    const res = await app.request(`${BASE}/auth/logout`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refreshToken: "qualquer" }),
+    });
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+  });
+
+  it("reflete a origem permitida no header CORS", async () => {
+    const res = await app.request(`${BASE}/auth/logout`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost:5173",
+      },
+      body: JSON.stringify({ refreshToken: "qualquer" }),
+    });
+    expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
+  });
 });

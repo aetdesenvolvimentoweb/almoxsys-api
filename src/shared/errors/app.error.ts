@@ -1,4 +1,4 @@
-export type HttpStatusCode = 400 | 401 | 403 | 404 | 409 | 500;
+export type HttpStatusCode = 400 | 401 | 403 | 404 | 409 | 429 | 500;
 
 /**
  * Erro base da aplicação. Todos os erros personalizados devem estender esta classe.

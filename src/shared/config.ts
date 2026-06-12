@@ -36,6 +36,43 @@ export function getRefreshTokenTtl(): number {
   return ttl ? parseInt(ttl, 10) : 7 * 24 * 60 * 60;
 }
 
+/**
+ * Origens permitidas pelo CORS, a partir de `CORS_ORIGINS` (lista separada por
+ * vírgula). Em produção é obrigatório defini-la — falha rápido para nunca subir
+ * com uma política permissiva. Em desenvolvimento, libera localhost por padrão.
+ *
+ * @throws {Error} se `CORS_ORIGINS` não estiver definida em produção.
+ */
+export function getCorsOrigins(): string[] {
+  const raw = process.env["CORS_ORIGINS"];
+  if (raw) {
+    return raw
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("CORS_ORIGINS não definido. Configure as origens permitidas em produção.");
+  }
+
+  return ["http://localhost:3000", "http://localhost:5173"];
+}
+
+/**
+ * Limite de requisições das rotas de autenticação (anti brute-force).
+ * Configurável via `RATE_LIMIT_AUTH_MAX` e `RATE_LIMIT_AUTH_WINDOW` (segundos).
+ * Padrão: 5 requisições por 60 segundos.
+ */
+export function getAuthRateLimit(): { max: number; windowMs: number } {
+  const max = process.env["RATE_LIMIT_AUTH_MAX"];
+  const windowSeconds = process.env["RATE_LIMIT_AUTH_WINDOW"];
+  return {
+    max: max ? parseInt(max, 10) : 5,
+    windowMs: (windowSeconds ? parseInt(windowSeconds, 10) : 60) * 1000,
+  };
+}
+
 export interface BootstrapAdminConfig {
   rg: number;
   nome: string;
