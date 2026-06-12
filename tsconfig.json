@@ -12,14 +12,12 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
-    "ignoreDeprecations": "6.0",
 
-    // Paths
-    "baseUrl": "./",
+    // Paths (resolvidos relativos ao tsconfig; baseUrl é desnecessário com moduleResolution bundler)
     "paths": {
-      "@core/*": ["src/core/*"],
-      "@infra/*": ["src/infrastructure/*"],
-      "@shared/*": ["src/shared/*"]
+      "@core/*": ["./src/core/*"],
+      "@infra/*": ["./src/infrastructure/*"],
+      "@shared/*": ["./src/shared/*"]
     },
 
     // Strict
