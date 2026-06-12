@@ -3,7 +3,8 @@ import { CriarMilitarCommand } from "@core/application/commands/criar-militar.co
 import { ExcluirMilitarCommand } from "@core/application/commands/excluir-militar.command";
 import { BuscarMilitarPorIdQuery } from "@core/application/queries/buscar-militar-por-id.query";
 import { ListarMilitaresQuery } from "@core/application/queries/listar-militares.query";
-import { Perfil } from "@core/domain/militar.entity";
+import { Perfil, type Militar } from "@core/domain/militar.entity";
+import type { IHasher } from "@core/ports/hasher.port";
 import type { ILogger } from "@core/ports/logger.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
@@ -25,6 +26,7 @@ const CriarMilitarSchema = z.object({
   nome: z.string().min(2).max(100),
   perfil: PerfilSchema,
   postoGraduacaoId: z.string().uuid(),
+  senha: z.string().min(8).max(100),
 });
 
 const AtualizarMilitarSchema = z
@@ -33,6 +35,7 @@ const AtualizarMilitarSchema = z
     nome: z.string().min(2).max(100).optional(),
     perfil: PerfilSchema.optional(),
     postoGraduacaoId: z.string().uuid().optional(),
+    senha: z.string().min(8).max(100).optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser informado para atualização",
@@ -42,10 +45,13 @@ const IdParamSchema = z.object({
   id: z.string().uuid(),
 });
 
+const toMilitarResponse = ({ senha: _senha, ...rest }: Militar) => rest;
+
 export function createMilitarRoutes(
   militarRepository: IMilitarRepository,
   postoGraduacaoRepository: IPostoGraduacaoRepository,
-  logger: ILogger
+  logger: ILogger,
+  hasher: IHasher
 ) {
   const router = new OpenAPIHono();
 
@@ -80,7 +86,7 @@ export function createMilitarRoutes(
     // TODO: autenticação + autorização Admin/Chefe
     const body = c.req.valid("json");
 
-    const command = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository);
+    const command = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, hasher);
     const result = await command.execute(body);
     logger.info("militar.criado", { id: result.id, rg: body.rg, perfil: body.perfil });
     return c.json(result, 201);
@@ -104,7 +110,7 @@ export function createMilitarRoutes(
     // TODO: autenticação + autorização
     const query = new ListarMilitaresQuery(militarRepository);
     const result = await query.execute();
-    return c.json(result);
+    return c.json(result.map(toMilitarResponse));
   });
 
   const buscarPorIdRoute = createRoute({
@@ -130,7 +136,7 @@ export function createMilitarRoutes(
     const { id } = c.req.valid("param");
     const query = new BuscarMilitarPorIdQuery(militarRepository);
     const result = await query.execute({ id });
-    return c.json(result, 200);
+    return c.json(toMilitarResponse(result), 200);
   });
 
   const atualizarRoute = createRoute({
@@ -166,9 +172,9 @@ export function createMilitarRoutes(
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
-    const command = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository);
+    const command = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository, hasher);
     await command.execute({ id, ...body });
-    logger.info("militar.atualizado", { id, changes: body });
+    logger.info("militar.atualizado", { id, changes: Object.keys(body) });
     return c.json({ message: "Militar atualizado com sucesso" }, 200);
   });
 

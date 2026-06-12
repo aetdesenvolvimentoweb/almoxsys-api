@@ -4,8 +4,14 @@ import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-pos
 import { ExcluirMilitarCommand } from "@core/application/commands/excluir-militar.command";
 import { MilitarNaoEncontradoError } from "@core/domain/errors/militar.errors";
 import { Perfil } from "@core/domain/militar.entity";
+import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+
+const mockHasher: IHasher = {
+  hash: async (plain) => `hashed:${plain}`,
+  verify: async (plain, hash) => hash === `hashed:${plain}`,
+};
 
 describe("ExcluirMilitarCommand", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -18,7 +24,7 @@ describe("ExcluirMilitarCommand", () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
     deleteCommand = new ExcluirMilitarCommand(militarRepository);
-    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository);
+    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -30,6 +36,7 @@ describe("ExcluirMilitarCommand", () => {
       nome: "José Oliveira",
       perfil: Perfil.ACA,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     await deleteCommand.execute({ id: result.id });
@@ -49,6 +56,7 @@ describe("ExcluirMilitarCommand", () => {
       nome: "Carlos Lima",
       perfil: Perfil.Almoxarife,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     await deleteCommand.execute({ id: result.id });
@@ -58,6 +66,7 @@ describe("ExcluirMilitarCommand", () => {
       nome: "Carlos Lima",
       perfil: Perfil.Almoxarife,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     expect(novoResult.id).not.toBe(result.id);
@@ -70,6 +79,7 @@ describe("ExcluirMilitarCommand", () => {
         nome: "Ana Souza",
         perfil: Perfil.Chefe,
         postoGraduacaoId: postoId,
+        senha: "Senha@123",
       })
     ).id;
     const id2 = (
@@ -78,6 +88,7 @@ describe("ExcluirMilitarCommand", () => {
         nome: "Bruno Costa",
         perfil: Perfil.ACA,
         postoGraduacaoId: postoId,
+        senha: "Senha@123",
       })
     ).id;
 

@@ -26,6 +26,7 @@ const PERFIS_VALIDOS = Object.values(Perfil) as string[];
  * @property nome - Nome completo. Permite acentuação, espaços internos e hifens.
  * @property perfil - Nível de acesso ao sistema conforme matriz de permissões.
  * @property postoGraduacaoId - Referência ao posto/graduação hierárquico do militar.
+ * @property senha - Hash Argon2id da senha. Nunca exposto nas respostas da API.
  */
 export interface Militar {
   id: string;
@@ -33,6 +34,7 @@ export interface Militar {
   nome: string;
   perfil: Perfil;
   postoGraduacaoId: string;
+  senha: string;
 }
 
 export interface CriarMilitarInput {
@@ -40,6 +42,7 @@ export interface CriarMilitarInput {
   nome: string;
   perfil: Perfil;
   postoGraduacaoId: string;
+  senha: string;
 }
 
 /**
@@ -80,5 +83,6 @@ export function criarMilitar(input: CriarMilitarInput): Militar {
     nome: nomeTrimado,
     perfil,
     postoGraduacaoId,
+    senha: input.senha,
   };
 }

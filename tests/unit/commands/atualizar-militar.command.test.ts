@@ -5,8 +5,14 @@ import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-pos
 import { MilitarNaoEncontradoError, RgJaExisteError } from "@core/domain/errors/militar.errors";
 import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
 import { Perfil } from "@core/domain/militar.entity";
+import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+
+const mockHasher: IHasher = {
+  hash: async (plain) => `hashed:${plain}`,
+  verify: async (plain, hash) => hash === `hashed:${plain}`,
+};
 
 describe("AtualizarMilitarCommand", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -19,8 +25,8 @@ describe("AtualizarMilitarCommand", () => {
   beforeEach(async () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
-    updateCommand = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository);
-    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository);
+    updateCommand = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
+    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -31,6 +37,7 @@ describe("AtualizarMilitarCommand", () => {
         nome: "João Silva",
         perfil: Perfil.Almoxarife,
         postoGraduacaoId: postoId,
+        senha: "Senha@123",
       })
     ).id;
   });
@@ -67,6 +74,22 @@ describe("AtualizarMilitarCommand", () => {
     expect(atualizado.postoGraduacaoId).toBe(novoPostoId);
   });
 
+  it("atualiza senha e armazena o hash", async () => {
+    await updateCommand.execute({ id: militarId, senha: "NovaSenha@456" });
+
+    const atualizado = await militarRepository.buscarPorId(militarId);
+    expect(atualizado.senha).toBe("hashed:NovaSenha@456");
+    expect(atualizado.senha).not.toBe("NovaSenha@456");
+  });
+
+  it("não altera a senha quando não informada na atualização", async () => {
+    const antes = await militarRepository.buscarPorId(militarId);
+    await updateCommand.execute({ id: militarId, nome: "João Pedro Silva" });
+
+    const depois = await militarRepository.buscarPorId(militarId);
+    expect(depois.senha).toBe(antes.senha);
+  });
+
   it("rejeita atualização de ID inexistente", async () => {
     expect(
       updateCommand.execute({ id: "00000000-0000-0000-0000-000000000000", nome: "Novo Nome" })
@@ -79,6 +102,7 @@ describe("AtualizarMilitarCommand", () => {
       nome: "Maria Santos",
       perfil: Perfil.ACA,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     expect(updateCommand.execute({ id: militarId, rg: 999 })).rejects.toThrow(RgJaExisteError);

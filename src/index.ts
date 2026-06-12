@@ -1,5 +1,6 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { BunPasswordHasher } from "@infra/adapters/bun-password-hasher.adapter";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { logger } from "@infra/adapters/pino-logger.adapter";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
@@ -27,9 +28,10 @@ if (process.env.NODE_ENV !== "production") {
 
 const postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
 const militarRepository = new MilitarInMemoryRepository();
+const hasher = new BunPasswordHasher();
 
 const postoGraduacaoRoutes = createPostoGraduacaoRoutes(postoGraduacaoRepository, logger);
-const militarRoutes = createMilitarRoutes(militarRepository, postoGraduacaoRepository, logger);
+const militarRoutes = createMilitarRoutes(militarRepository, postoGraduacaoRepository, logger, hasher);
 
 app.route("/api/v1", postoGraduacaoRoutes);
 app.route("/api/v1", militarRoutes);

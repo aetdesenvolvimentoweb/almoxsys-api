@@ -4,8 +4,14 @@ import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-pos
 import { BuscarMilitarPorIdQuery } from "@core/application/queries/buscar-militar-por-id.query";
 import { MilitarNaoEncontradoError } from "@core/domain/errors/militar.errors";
 import { Perfil } from "@core/domain/militar.entity";
+import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+
+const mockHasher: IHasher = {
+  hash: async (plain) => `hashed:${plain}`,
+  verify: async (plain, hash) => hash === `hashed:${plain}`,
+};
 
 describe("BuscarMilitarPorIdQuery", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -18,7 +24,7 @@ describe("BuscarMilitarPorIdQuery", () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
     query = new BuscarMilitarPorIdQuery(militarRepository);
-    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository);
+    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -30,6 +36,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       nome: "Pedro Alves",
       perfil: Perfil.Chefe,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     const result = await query.execute({ id: created.id });
@@ -52,6 +59,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       nome: "Ana Lima",
       perfil: Perfil.ACA,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
     const id2 = (
       await createCommand.execute({
@@ -59,6 +67,7 @@ describe("BuscarMilitarPorIdQuery", () => {
         nome: "Bruno Melo",
         perfil: Perfil.Almoxarife,
         postoGraduacaoId: postoId,
+        senha: "Senha@123",
       })
     ).id;
     await createCommand.execute({
@@ -66,6 +75,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       nome: "Carla Nunes",
       perfil: Perfil.Chefe,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     const result = await query.execute({ id: id2 });

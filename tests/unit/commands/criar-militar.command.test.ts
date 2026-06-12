@@ -4,8 +4,14 @@ import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-pos
 import { RgJaExisteError } from "@core/domain/errors/militar.errors";
 import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
 import { Perfil } from "@core/domain/militar.entity";
+import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+
+const mockHasher: IHasher = {
+  hash: async (plain) => `hashed:${plain}`,
+  verify: async (plain, hash) => hash === `hashed:${plain}`,
+};
 
 describe("CriarMilitarCommand", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -16,7 +22,7 @@ describe("CriarMilitarCommand", () => {
   beforeEach(async () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
-    command = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository);
+    command = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -28,6 +34,7 @@ describe("CriarMilitarCommand", () => {
       nome: "João Silva",
       perfil: Perfil.Almoxarife,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     expect(result.id).toBeTruthy();
@@ -39,6 +46,20 @@ describe("CriarMilitarCommand", () => {
     expect(criado.postoGraduacaoId).toBe(postoId);
   });
 
+  it("armazena a senha como hash, não como texto puro", async () => {
+    const result = await command.execute({
+      rg: 1,
+      nome: "João Silva",
+      perfil: Perfil.Almoxarife,
+      postoGraduacaoId: postoId,
+      senha: "Senha@123",
+    });
+
+    const criado = await militarRepository.buscarPorId(result.id);
+    expect(criado.senha).toBe("hashed:Senha@123");
+    expect(criado.senha).not.toBe("Senha@123");
+  });
+
   it("rejeita postoGraduacaoId inexistente", async () => {
     expect(
       command.execute({
@@ -46,6 +67,7 @@ describe("CriarMilitarCommand", () => {
         nome: "Carlos Souza",
         perfil: Perfil.ACA,
         postoGraduacaoId: "00000000-0000-0000-0000-000000000000",
+        senha: "Senha@123",
       })
     ).rejects.toThrow(PostoGraduacaoNaoEncontradoError);
   });
@@ -56,6 +78,7 @@ describe("CriarMilitarCommand", () => {
       nome: "Maria Santos",
       perfil: Perfil.Chefe,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     expect(
@@ -64,6 +87,7 @@ describe("CriarMilitarCommand", () => {
         nome: "Pedro Lima",
         perfil: Perfil.ACA,
         postoGraduacaoId: postoId,
+        senha: "Senha@123",
       })
     ).rejects.toThrow(RgJaExisteError);
   });
@@ -74,12 +98,14 @@ describe("CriarMilitarCommand", () => {
       nome: "Ana Costa",
       perfil: Perfil.Administrador,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
     const r2 = await command.execute({
       rg: 2,
       nome: "Bruno Ferreira",
       perfil: Perfil.Chefe,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     expect(r1.id).not.toBe(r2.id);
@@ -92,6 +118,7 @@ describe("CriarMilitarCommand", () => {
       nome: "  Rui Barbosa  ",
       perfil: Perfil.Almoxarife,
       postoGraduacaoId: postoId,
+      senha: "Senha@123",
     });
 
     const criado = await militarRepository.buscarPorId(result.id);
