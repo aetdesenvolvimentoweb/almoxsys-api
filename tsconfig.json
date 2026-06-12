@@ -12,9 +12,10 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "noEmit": true,
+    "ignoreDeprecations": "6.0",
 
     // Paths
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@core/*": ["src/core/*"],
       "@infra/*": ["src/infrastructure/*"],
