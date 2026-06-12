@@ -72,7 +72,11 @@ export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository
 
     const command = new CriarPostoGraduacaoCommand(repository);
     const result = await command.execute(body);
-    logger.info("posto-graduacao.criado", { id: result.id, abreviatura: body.abreviatura, ordem: body.ordem });
+    logger.info("posto-graduacao.criado", {
+      id: result.id,
+      abreviatura: body.abreviatura,
+      ordem: body.ordem,
+    });
     return c.json(result, 201);
   });
 

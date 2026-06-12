@@ -7,6 +7,7 @@ console.log("🔍 Running pre-commit checks...\n");
 try {
   console.log("📝 Linting and formatting with Biome...");
   await $`bunx biome check --write src tests`;
+  await $`git add -u`;
 
   console.log("\n✅ Biome passed!");
   console.log("\n🧪 Running tests...");

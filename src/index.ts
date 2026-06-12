@@ -1,7 +1,7 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 import { logger } from "@infra/adapters/pino-logger.adapter";
+import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 import { errorHandlerMiddleware } from "@infra/http/error-handler.middleware";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
 import { getServerPort } from "@shared/config";
