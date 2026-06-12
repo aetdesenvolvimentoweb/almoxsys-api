@@ -1,17 +1,21 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import { CriarMilitarCommand } from "@core/application/commands/criar-militar.command";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
+import type { Ator } from "@core/domain/auth/ator";
 import { RgJaExisteError } from "@core/domain/errors/militar.errors";
 import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
 import { Perfil } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+import { ForbiddenError } from "@shared/errors";
 
 const mockHasher: IHasher = {
   hash: async (plain) => `hashed:${plain}`,
   verify: async (plain, hash) => hash === `hashed:${plain}`,
 };
+
+const admin: Ator = { id: "admin-id", perfil: Perfil.Administrador };
 
 describe("CriarMilitarCommand", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -30,6 +34,7 @@ describe("CriarMilitarCommand", () => {
 
   it("cria um militar com sucesso", async () => {
     const result = await command.execute({
+      ator: admin,
       rg: 12345,
       nome: "João Silva",
       perfil: Perfil.Almoxarife,
@@ -48,6 +53,7 @@ describe("CriarMilitarCommand", () => {
 
   it("armazena a senha como hash, não como texto puro", async () => {
     const result = await command.execute({
+      ator: admin,
       rg: 1,
       nome: "João Silva",
       perfil: Perfil.Almoxarife,
@@ -60,9 +66,38 @@ describe("CriarMilitarCommand", () => {
     expect(criado.senha).not.toBe("Senha@123");
   });
 
-  it("rejeita postoGraduacaoId inexistente", async () => {
+  it("Chefe não pode criar Administrador", () => {
+    const chefe: Ator = { id: "chefe-id", perfil: Perfil.Chefe };
     expect(
       command.execute({
+        ator: chefe,
+        rg: 2,
+        nome: "Novo Admin",
+        perfil: Perfil.Administrador,
+        postoGraduacaoId: postoId,
+        senha: "Senha@123",
+      })
+    ).rejects.toThrow(ForbiddenError);
+  });
+
+  it("Almoxarife não pode criar militares", () => {
+    const almoxarife: Ator = { id: "almox-id", perfil: Perfil.Almoxarife };
+    expect(
+      command.execute({
+        ator: almoxarife,
+        rg: 3,
+        nome: "Outro ACA",
+        perfil: Perfil.ACA,
+        postoGraduacaoId: postoId,
+        senha: "Senha@123",
+      })
+    ).rejects.toThrow(ForbiddenError);
+  });
+
+  it("rejeita postoGraduacaoId inexistente", () => {
+    expect(
+      command.execute({
+        ator: admin,
         rg: 1,
         nome: "Carlos Souza",
         perfil: Perfil.ACA,
@@ -74,6 +109,7 @@ describe("CriarMilitarCommand", () => {
 
   it("rejeita RG duplicado", async () => {
     await command.execute({
+      ator: admin,
       rg: 100,
       nome: "Maria Santos",
       perfil: Perfil.Chefe,
@@ -83,6 +119,7 @@ describe("CriarMilitarCommand", () => {
 
     expect(
       command.execute({
+        ator: admin,
         rg: 100,
         nome: "Pedro Lima",
         perfil: Perfil.ACA,
@@ -94,6 +131,7 @@ describe("CriarMilitarCommand", () => {
 
   it("cria múltiplos militares com RGs distintos", async () => {
     const r1 = await command.execute({
+      ator: admin,
       rg: 1,
       nome: "Ana Costa",
       perfil: Perfil.Administrador,
@@ -101,6 +139,7 @@ describe("CriarMilitarCommand", () => {
       senha: "Senha@123",
     });
     const r2 = await command.execute({
+      ator: admin,
       rg: 2,
       nome: "Bruno Ferreira",
       perfil: Perfil.Chefe,
@@ -114,6 +153,7 @@ describe("CriarMilitarCommand", () => {
 
   it("remove espaços extras do nome", async () => {
     const result = await command.execute({
+      ator: admin,
       rg: 50,
       nome: "  Rui Barbosa  ",
       perfil: Perfil.Almoxarife,

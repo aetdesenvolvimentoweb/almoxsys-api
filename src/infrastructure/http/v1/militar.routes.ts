@@ -8,7 +8,9 @@ import type { IHasher } from "@core/ports/hasher.port";
 import type { ILogger } from "@core/ports/logger.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
+import type { ITokenService } from "@core/ports/token.port";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { type AuthVariables, createAuthMiddleware } from "@infra/http/auth.middleware";
 import { z } from "zod";
 
 const PerfilSchema = z.enum([Perfil.Administrador, Perfil.Chefe, Perfil.Almoxarife, Perfil.ACA]);
@@ -49,9 +51,12 @@ export function createMilitarRoutes(
   militarRepository: IMilitarRepository,
   postoGraduacaoRepository: IPostoGraduacaoRepository,
   logger: ILogger,
-  hasher: IHasher
+  hasher: IHasher,
+  tokenService: ITokenService
 ) {
-  const router = new OpenAPIHono();
+  const router = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+  router.use(createAuthMiddleware(tokenService));
 
   const criarRoute = createRoute({
     method: "post",
@@ -81,11 +86,11 @@ export function createMilitarRoutes(
   });
 
   router.openapi(criarRoute, async (c) => {
-    // TODO: autenticação + autorização Admin/Chefe
+    const ator = c.get("ator");
     const body = c.req.valid("json");
 
     const command = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, hasher);
-    const result = await command.execute(body);
+    const result = await command.execute({ ator, ...body });
     logger.info("militar.criado", { id: result.id, rg: body.rg, perfil: body.perfil });
     return c.json(result, 201);
   });
@@ -105,7 +110,6 @@ export function createMilitarRoutes(
   });
 
   router.openapi(listarRoute, async (c) => {
-    // TODO: autenticação + autorização
     const query = new ListarMilitaresQuery(militarRepository);
     const result = await query.execute();
     return c.json(result);
@@ -130,7 +134,6 @@ export function createMilitarRoutes(
   });
 
   router.openapi(buscarPorIdRoute, async (c) => {
-    // TODO: autenticação + autorização
     const { id } = c.req.valid("param");
     const query = new BuscarMilitarPorIdQuery(militarRepository);
     const result = await query.execute({ id });
@@ -166,7 +169,7 @@ export function createMilitarRoutes(
   });
 
   router.openapi(atualizarRoute, async (c) => {
-    // TODO: autenticação + autorização Admin/Chefe
+    const ator = c.get("ator");
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
@@ -175,7 +178,7 @@ export function createMilitarRoutes(
       postoGraduacaoRepository,
       hasher
     );
-    await command.execute({ id, ...body });
+    await command.execute({ ator, id, ...body });
     logger.info("militar.atualizado", { id, changes: Object.keys(body) });
     return c.json({ message: "Militar atualizado com sucesso" }, 200);
   });
@@ -197,11 +200,11 @@ export function createMilitarRoutes(
   });
 
   router.openapi(excluirRoute, async (c) => {
-    // TODO: autenticação + autorização Admin
+    const ator = c.get("ator");
     const { id } = c.req.valid("param");
 
     const command = new ExcluirMilitarCommand(militarRepository);
-    await command.execute({ id });
+    await command.execute({ ator, id });
     logger.info("militar.excluido", { id });
     return c.body(null, 204);
   });

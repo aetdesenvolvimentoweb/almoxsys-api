@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "bun:test";
 import { CriarMilitarCommand } from "@core/application/commands/criar-militar.command";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
 import { ListarMilitaresQuery } from "@core/application/queries/listar-militares.query";
+import type { Ator } from "@core/domain/auth/ator";
 import { Perfil } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
@@ -11,6 +12,8 @@ const mockHasher: IHasher = {
   hash: async (plain) => `hashed:${plain}`,
   verify: async (plain, hash) => hash === `hashed:${plain}`,
 };
+
+const admin: Ator = { id: "admin-id", perfil: Perfil.Administrador };
 
 describe("ListarMilitaresQuery", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -40,6 +43,7 @@ describe("ListarMilitaresQuery", () => {
 
   it("retorna lista com um militar", async () => {
     await createCommand.execute({
+      ator: admin,
       rg: 10,
       nome: "João Silva",
       perfil: Perfil.ACA,
@@ -56,6 +60,7 @@ describe("ListarMilitaresQuery", () => {
 
   it("não expõe a senha em nenhum item da lista", async () => {
     await createCommand.execute({
+      ator: admin,
       rg: 10,
       nome: "João Silva",
       perfil: Perfil.ACA,
@@ -70,6 +75,7 @@ describe("ListarMilitaresQuery", () => {
 
   it("retorna lista ordenada por RG ascendente", async () => {
     await createCommand.execute({
+      ator: admin,
       rg: 50,
       nome: "Carlos Lima",
       perfil: Perfil.ACA,
@@ -77,6 +83,7 @@ describe("ListarMilitaresQuery", () => {
       senha: "Senha@123",
     });
     await createCommand.execute({
+      ator: admin,
       rg: 10,
       nome: "Ana Costa",
       perfil: Perfil.Almoxarife,
@@ -84,6 +91,7 @@ describe("ListarMilitaresQuery", () => {
       senha: "Senha@123",
     });
     await createCommand.execute({
+      ator: admin,
       rg: 30,
       nome: "Bruno Souza",
       perfil: Perfil.Chefe,
@@ -101,6 +109,7 @@ describe("ListarMilitaresQuery", () => {
 
   it("retorna ordenação correta mesmo inserindo fora de ordem", async () => {
     await createCommand.execute({
+      ator: admin,
       rg: 99999,
       nome: "Zé Pereira",
       perfil: Perfil.ACA,
@@ -108,6 +117,7 @@ describe("ListarMilitaresQuery", () => {
       senha: "Senha@123",
     });
     await createCommand.execute({
+      ator: admin,
       rg: 1,
       nome: "Abel Ramos",
       perfil: Perfil.Administrador,

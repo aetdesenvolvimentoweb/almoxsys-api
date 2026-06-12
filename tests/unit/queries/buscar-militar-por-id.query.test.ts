@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "bun:test";
 import { CriarMilitarCommand } from "@core/application/commands/criar-militar.command";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
 import { BuscarMilitarPorIdQuery } from "@core/application/queries/buscar-militar-por-id.query";
+import type { Ator } from "@core/domain/auth/ator";
 import { MilitarNaoEncontradoError } from "@core/domain/errors/militar.errors";
 import { Perfil } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
@@ -12,6 +13,8 @@ const mockHasher: IHasher = {
   hash: async (plain) => `hashed:${plain}`,
   verify: async (plain, hash) => hash === `hashed:${plain}`,
 };
+
+const admin: Ator = { id: "admin-id", perfil: Perfil.Administrador };
 
 describe("BuscarMilitarPorIdQuery", () => {
   let militarRepository: MilitarInMemoryRepository;
@@ -36,6 +39,7 @@ describe("BuscarMilitarPorIdQuery", () => {
 
   it("encontra um militar pelo ID", async () => {
     const created = await createCommand.execute({
+      ator: admin,
       rg: 42,
       nome: "Pedro Alves",
       perfil: Perfil.Chefe,
@@ -53,6 +57,7 @@ describe("BuscarMilitarPorIdQuery", () => {
 
   it("não expõe a senha na projeção de leitura", async () => {
     const created = await createCommand.execute({
+      ator: admin,
       rg: 7,
       nome: "Ivo Mendes",
       perfil: Perfil.ACA,
@@ -65,7 +70,7 @@ describe("BuscarMilitarPorIdQuery", () => {
     expect(result).not.toHaveProperty("senha");
   });
 
-  it("rejeita ID inexistente", async () => {
+  it("rejeita ID inexistente", () => {
     expect(query.execute({ id: "00000000-0000-0000-0000-000000000000" })).rejects.toThrow(
       MilitarNaoEncontradoError
     );
@@ -73,6 +78,7 @@ describe("BuscarMilitarPorIdQuery", () => {
 
   it("encontra corretamente entre múltiplos militares", async () => {
     await createCommand.execute({
+      ator: admin,
       rg: 1,
       nome: "Ana Lima",
       perfil: Perfil.ACA,
@@ -81,6 +87,7 @@ describe("BuscarMilitarPorIdQuery", () => {
     });
     const id2 = (
       await createCommand.execute({
+        ator: admin,
         rg: 2,
         nome: "Bruno Melo",
         perfil: Perfil.Almoxarife,
@@ -89,6 +96,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       })
     ).id;
     await createCommand.execute({
+      ator: admin,
       rg: 3,
       nome: "Carla Nunes",
       perfil: Perfil.Chefe,
