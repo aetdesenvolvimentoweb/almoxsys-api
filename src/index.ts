@@ -5,11 +5,12 @@ import { HonoJwtTokenService } from "@infra/adapters/hono-jwt-token.service";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { logger } from "@infra/adapters/pino-logger.adapter";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+import { RefreshTokenInMemoryRepository } from "@infra/adapters/refresh-token-in-memory.repository";
 import { errorHandler } from "@infra/http/error-handler.middleware";
 import { createAuthRoutes } from "@infra/http/v1/auth.routes";
 import { createMilitarRoutes } from "@infra/http/v1/militar.routes";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
-import { getAccessTokenTtl, getJwtSecret, getServerPort } from "@shared/config";
+import { getAccessTokenTtl, getJwtSecret, getRefreshTokenTtl, getServerPort } from "@shared/config";
 
 const app = new OpenAPIHono();
 
@@ -30,10 +31,18 @@ if (process.env.NODE_ENV !== "production") {
 
 const postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
 const militarRepository = new MilitarInMemoryRepository();
+const refreshTokenRepository = new RefreshTokenInMemoryRepository();
 const hasher = new BunPasswordHasher();
 const tokenService = new HonoJwtTokenService(getJwtSecret(), getAccessTokenTtl());
 
-const authRoutes = createAuthRoutes(militarRepository, hasher, tokenService, logger);
+const authRoutes = createAuthRoutes({
+  militarRepository,
+  refreshTokenRepository,
+  hasher,
+  tokenService,
+  refreshTtlSeconds: getRefreshTokenTtl(),
+  logger,
+});
 const postoGraduacaoRoutes = createPostoGraduacaoRoutes(postoGraduacaoRepository, logger);
 const militarRoutes = createMilitarRoutes(
   militarRepository,

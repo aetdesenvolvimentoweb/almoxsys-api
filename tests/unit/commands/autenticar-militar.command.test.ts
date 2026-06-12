@@ -7,6 +7,7 @@ import type { IHasher } from "@core/ports/hasher.port";
 import type { ITokenService } from "@core/ports/token.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+import { RefreshTokenInMemoryRepository } from "@infra/adapters/refresh-token-in-memory.repository";
 import { UnauthorizedError } from "@shared/errors";
 
 const mockHasher: IHasher = {
@@ -22,13 +23,21 @@ const mockTokenService: ITokenService = {
 describe("AutenticarMilitarCommand", () => {
   let militarRepository: MilitarInMemoryRepository;
   let postoGraduacaoRepository: PostoGraduacaoInMemoryRepository;
+  let refreshTokenRepository: RefreshTokenInMemoryRepository;
   let command: AutenticarMilitarCommand;
   let militarId: string;
 
   beforeEach(async () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
-    command = new AutenticarMilitarCommand(militarRepository, mockHasher, mockTokenService);
+    refreshTokenRepository = new RefreshTokenInMemoryRepository();
+    command = new AutenticarMilitarCommand(
+      militarRepository,
+      mockHasher,
+      mockTokenService,
+      refreshTokenRepository,
+      3600
+    );
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     const postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -50,16 +59,24 @@ describe("AutenticarMilitarCommand", () => {
     ).id;
   });
 
-  it("autentica com RG e senha corretos e retorna access token", async () => {
+  it("autentica com RG e senha corretos e retorna o par de tokens", async () => {
     const result = await command.execute({ rg: 100, senha: "Senha@123" });
     expect(result.accessToken).toBe(`token:${militarId}:${Perfil.Almoxarife}`);
+    expect(result.refreshToken).toBeTruthy();
   });
 
-  it("rejeita RG inexistente com erro genérico", async () => {
+  it("persiste o refresh token (hasheado) ao autenticar", async () => {
+    const result = await command.execute({ rg: 100, senha: "Senha@123" });
+    const { hashToken } = await import("@shared/crypto");
+    const armazenado = await refreshTokenRepository.buscarPorHash(hashToken(result.refreshToken));
+    expect(armazenado?.militarId).toBe(militarId);
+  });
+
+  it("rejeita RG inexistente com erro genérico", () => {
     expect(command.execute({ rg: 999, senha: "Senha@123" })).rejects.toThrow(UnauthorizedError);
   });
 
-  it("rejeita senha incorreta com erro genérico", async () => {
+  it("rejeita senha incorreta com erro genérico", () => {
     expect(command.execute({ rg: 100, senha: "ErroSenha" })).rejects.toThrow(UnauthorizedError);
   });
 

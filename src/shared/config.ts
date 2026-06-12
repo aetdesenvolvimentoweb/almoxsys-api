@@ -27,3 +27,11 @@ export function getAccessTokenTtl(): number {
   const ttl = process.env["JWT_ACCESS_TTL"];
   return ttl ? parseInt(ttl, 10) : 15 * 60;
 }
+
+/**
+ * Tempo de expiração do refresh token, em segundos (padrão: 7 dias).
+ */
+export function getRefreshTokenTtl(): number {
+  const ttl = process.env["JWT_REFRESH_TTL"];
+  return ttl ? parseInt(ttl, 10) : 7 * 24 * 60 * 60;
+}

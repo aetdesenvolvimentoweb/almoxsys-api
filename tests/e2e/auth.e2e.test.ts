@@ -33,4 +33,22 @@ describe("Autenticação e proteção de rotas (e2e)", () => {
     });
     expect(res.status).toBe(400);
   });
+
+  it("refresh com token inválido retorna 401", async () => {
+    const res = await app.request(`${BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refreshToken: "invalido" }),
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("logout é idempotente e retorna 204", async () => {
+    const res = await app.request(`${BASE}/auth/logout`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ refreshToken: "qualquer" }),
+    });
+    expect(res.status).toBe(204);
+  });
 });
