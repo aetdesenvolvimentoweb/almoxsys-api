@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, typecheck, testes e segurança
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # histórico completo para o secret scanning
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Instalar dependências
+        run: bun install --frozen-lockfile
+
+      - name: Lint e formatação (Biome)
+        run: bunx biome ci .
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      # O coverageThreshold do Bun é por-arquivo; aqui aplicamos um piso GLOBAL
+      # sobre a linha "All files" do relatório de cobertura.
+      - name: Testes com cobertura (piso global de linhas)
+        env:
+          JWT_SECRET: test-secret
+          LC_ALL: C # garante ponto como separador decimal no awk, independente do locale
+        run: |
+          set -o pipefail
+          OUT=$(bun test --coverage 2>&1) || { echo "$OUT"; exit 1; }
+          echo "$OUT"
+          # 2º número da linha "All files" = % de linhas (1º é % de funcs)
+          LINES=$(printf '%s\n' "$OUT" | grep -E '^All files' | grep -oE '[0-9]+\.[0-9]+' | sed -n '2p')
+          FLOOR=85
+          awk -v l="$LINES" -v f="$FLOOR" 'BEGIN {
+            if (l+0 < f+0) { printf "Cobertura de linhas %.2f%% abaixo do mínimo de %d%%\n", l, f; exit 1 }
+            printf "Cobertura de linhas %.2f%% (mínimo %d%%)\n", l, f
+          }'
+
+      - name: Auditoria de dependências
+        run: bun audit
+
+      - name: Secret scanning (gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source=/repo --redact --no-banner --exit-code=1
