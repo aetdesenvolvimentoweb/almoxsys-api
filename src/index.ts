@@ -1,8 +1,10 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { logger } from "@infra/adapters/pino-logger.adapter";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
 import { errorHandlerMiddleware } from "@infra/http/error-handler.middleware";
+import { createMilitarRoutes } from "@infra/http/v1/militar.routes";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
 import { getServerPort } from "@shared/config";
 
@@ -24,9 +26,13 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
+const militarRepository = new MilitarInMemoryRepository();
+
 const postoGraduacaoRoutes = createPostoGraduacaoRoutes(postoGraduacaoRepository, logger);
+const militarRoutes = createMilitarRoutes(militarRepository, postoGraduacaoRepository, logger);
 
 app.route("/api/v1", postoGraduacaoRoutes);
+app.route("/api/v1", militarRoutes);
 
 export default {
   port: getServerPort(),
