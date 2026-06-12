@@ -1,6 +1,7 @@
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
+import { logger } from "@infra/adapters/pino-logger.adapter";
 import { errorHandlerMiddleware } from "@infra/http/error-handler.middleware";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
 import { getServerPort } from "@shared/config";
@@ -23,7 +24,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
-const postoGraduacaoRoutes = createPostoGraduacaoRoutes(postoGraduacaoRepository);
+const postoGraduacaoRoutes = createPostoGraduacaoRoutes(postoGraduacaoRepository, logger);
 
 app.route("/api/v1", postoGraduacaoRoutes);
 

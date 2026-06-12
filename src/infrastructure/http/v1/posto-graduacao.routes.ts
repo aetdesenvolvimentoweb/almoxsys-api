@@ -3,6 +3,7 @@ import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-pos
 import { ExcluirPostoGraduacaoCommand } from "@core/application/commands/excluir-posto-graduacao.command";
 import { BuscarPostoGraduacaoPorIdQuery } from "@core/application/queries/buscar-posto-graduacao-por-id.query";
 import { ListarPostosGraduacaoQuery } from "@core/application/queries/listar-postos-graduacao.query";
+import type { ILogger } from "@core/ports/logger.port";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "zod";
@@ -27,7 +28,7 @@ const IdParamSchema = z.object({
   id: z.string().uuid(),
 });
 
-export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository) {
+export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository, logger: ILogger) {
   const router = new OpenAPIHono();
 
   const criarRoute = createRoute({
@@ -71,6 +72,7 @@ export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository
 
     const command = new CriarPostoGraduacaoCommand(repository);
     const result = await command.execute(body);
+    logger.info("posto-graduacao.criado", { id: result.id, abreviatura: body.abreviatura, ordem: body.ordem });
     return c.json(result, 201);
   });
 
@@ -187,6 +189,7 @@ export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository
 
     const command = new AtualizarPostoGraduacaoCommand(repository);
     await command.execute({ id, ...body });
+    logger.info("posto-graduacao.atualizado", { id, changes: body });
     return c.json({ message: "Posto/graduação atualizado com sucesso" }, 200);
   });
 
@@ -220,6 +223,7 @@ export function createPostoGraduacaoRoutes(repository: IPostoGraduacaoRepository
 
     const command = new ExcluirPostoGraduacaoCommand(repository);
     await command.execute({ id });
+    logger.info("posto-graduacao.excluido", { id });
     return c.body(null, 204);
   });
 
