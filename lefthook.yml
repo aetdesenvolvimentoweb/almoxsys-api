@@ -1,0 +1,23 @@
+# Git hooks versionados (Lefthook). Instalados via `bun install` (script prepare).
+# Mantidos leves: validações pesadas (coverage, audit, gitleaks) ficam no CI.
+
+commit-msg:
+  jobs:
+    - name: conventional
+      # Valida Conventional Commits com os types definidos no CLAUDE.md.
+      # Regex zero-dependência: <type>(scope opcional)(! opcional): <descrição>
+      run: |
+        head -1 "{1}" | grep -qE '^(feat|fix|refactor|test|docs|chore|perf|ci)(\([a-z0-9-]+\))?!?: .+' || {
+          echo "✗ Mensagem fora do padrão Conventional Commits."
+          echo "  Formato: <type>(<scope>): <descrição em português>"
+          echo "  Types válidos: feat, fix, refactor, test, docs, chore, perf, ci"
+          exit 1
+        }
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: biome
+      run: bunx biome ci .
+    - name: typecheck
+      run: bun run typecheck
