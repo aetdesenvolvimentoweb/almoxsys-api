@@ -1,0 +1,73 @@
+import { RgJaExisteError } from "@core/domain/errors/militar.errors";
+import { NOME_REGEX, type Perfil, Perfil as PerfilEnum } from "@core/domain/militar.entity";
+import type { IMilitarRepository } from "@core/ports/militar.repository";
+import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
+import { ValidationError } from "@shared/errors";
+
+export interface AtualizarMilitarInput {
+  id: string;
+  rg?: number;
+  nome?: string;
+  perfil?: Perfil;
+  postoGraduacaoId?: string;
+}
+
+export class AtualizarMilitarCommand {
+  constructor(
+    private militarRepository: IMilitarRepository,
+    private postoGraduacaoRepository: IPostoGraduacaoRepository
+  ) {}
+
+  async execute(input: AtualizarMilitarInput): Promise<void> {
+    const { id, rg, nome, perfil, postoGraduacaoId } = input;
+
+    const militar = await this.militarRepository.buscarPorId(id);
+
+    if (rg !== undefined) {
+      if (!Number.isInteger(rg) || rg < 1 || rg > 99999) {
+        throw new ValidationError("RG deve ser um inteiro entre 1 e 99999", {
+          field: "rg",
+          value: rg,
+        });
+      }
+      const outro = await this.militarRepository.buscarPorRg(rg);
+      if (outro && outro.id !== id) {
+        throw new RgJaExisteError(rg);
+      }
+    }
+
+    if (nome !== undefined) {
+      const nomeTrimado = nome.trim();
+      if (!NOME_REGEX.test(nomeTrimado)) {
+        throw new ValidationError(
+          "Nome inválido. Use apenas letras, acentos, espaços, hifens ou apóstrofos",
+          { field: "nome", value: nome }
+        );
+      }
+    }
+
+    if (perfil !== undefined) {
+      const perfisValidos = Object.values(PerfilEnum) as string[];
+      if (!perfisValidos.includes(perfil)) {
+        throw new ValidationError(`Perfil inválido: "${perfil}"`, {
+          field: "perfil",
+          value: perfil,
+        });
+      }
+    }
+
+    if (postoGraduacaoId !== undefined) {
+      await this.postoGraduacaoRepository.buscarPorId(postoGraduacaoId);
+    }
+
+    const atualizado = {
+      ...militar,
+      ...(rg !== undefined && { rg }),
+      ...(nome !== undefined && { nome: nome.trim() }),
+      ...(perfil !== undefined && { perfil }),
+      ...(postoGraduacaoId !== undefined && { postoGraduacaoId }),
+    };
+
+    await this.militarRepository.atualizar(atualizado);
+  }
+}
