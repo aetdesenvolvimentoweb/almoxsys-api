@@ -3,7 +3,7 @@ import { CriarMilitarCommand } from "@core/application/commands/criar-militar.co
 import { ExcluirMilitarCommand } from "@core/application/commands/excluir-militar.command";
 import { BuscarMilitarPorIdQuery } from "@core/application/queries/buscar-militar-por-id.query";
 import { ListarMilitaresQuery } from "@core/application/queries/listar-militares.query";
-import { Perfil, type Militar } from "@core/domain/militar.entity";
+import { Perfil } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import type { ILogger } from "@core/ports/logger.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
@@ -44,8 +44,6 @@ const AtualizarMilitarSchema = z
 const IdParamSchema = z.object({
   id: z.string().uuid(),
 });
-
-const toMilitarResponse = ({ senha: _senha, ...rest }: Militar) => rest;
 
 export function createMilitarRoutes(
   militarRepository: IMilitarRepository,
@@ -110,7 +108,7 @@ export function createMilitarRoutes(
     // TODO: autenticação + autorização
     const query = new ListarMilitaresQuery(militarRepository);
     const result = await query.execute();
-    return c.json(result.map(toMilitarResponse));
+    return c.json(result);
   });
 
   const buscarPorIdRoute = createRoute({
@@ -136,7 +134,7 @@ export function createMilitarRoutes(
     const { id } = c.req.valid("param");
     const query = new BuscarMilitarPorIdQuery(militarRepository);
     const result = await query.execute({ id });
-    return c.json(toMilitarResponse(result), 200);
+    return c.json(result, 200);
   });
 
   const atualizarRoute = createRoute({
@@ -172,7 +170,11 @@ export function createMilitarRoutes(
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
-    const command = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository, hasher);
+    const command = new AtualizarMilitarCommand(
+      militarRepository,
+      postoGraduacaoRepository,
+      hasher
+    );
     await command.execute({ id, ...body });
     logger.info("militar.atualizado", { id, changes: Object.keys(body) });
     return c.json({ message: "Militar atualizado com sucesso" }, 200);

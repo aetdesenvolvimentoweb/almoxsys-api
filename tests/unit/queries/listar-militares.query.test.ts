@@ -23,7 +23,11 @@ describe("ListarMilitaresQuery", () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
     query = new ListarMilitaresQuery(militarRepository);
-    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
+    createCommand = new CriarMilitarCommand(
+      militarRepository,
+      postoGraduacaoRepository,
+      mockHasher
+    );
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -48,6 +52,20 @@ describe("ListarMilitaresQuery", () => {
     expect(result).toHaveLength(1);
     expect(result.at(0)?.rg).toBe(10);
     expect(result.at(0)?.nome).toBe("João Silva");
+  });
+
+  it("não expõe a senha em nenhum item da lista", async () => {
+    await createCommand.execute({
+      rg: 10,
+      nome: "João Silva",
+      perfil: Perfil.ACA,
+      postoGraduacaoId: postoId,
+      senha: "Senha@123",
+    });
+
+    const result = await query.execute();
+
+    expect(result.at(0)).not.toHaveProperty("senha");
   });
 
   it("retorna lista ordenada por RG ascendente", async () => {

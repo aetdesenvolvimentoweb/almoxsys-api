@@ -1,4 +1,4 @@
-import type { Militar } from "@core/domain/militar.entity";
+import { type MilitarView, toMilitarView } from "@core/domain/militar.entity";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 
 export interface BuscarMilitarPorIdInput {
@@ -8,7 +8,8 @@ export interface BuscarMilitarPorIdInput {
 export class BuscarMilitarPorIdQuery {
   constructor(private repository: IMilitarRepository) {}
 
-  async execute(input: BuscarMilitarPorIdInput): Promise<Militar> {
-    return this.repository.buscarPorId(input.id);
+  async execute(input: BuscarMilitarPorIdInput): Promise<MilitarView> {
+    const militar = await this.repository.buscarPorId(input.id);
+    return toMilitarView(militar);
   }
 }

@@ -24,7 +24,11 @@ describe("BuscarMilitarPorIdQuery", () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
     query = new BuscarMilitarPorIdQuery(militarRepository);
-    createCommand = new CriarMilitarCommand(militarRepository, postoGraduacaoRepository, mockHasher);
+    createCommand = new CriarMilitarCommand(
+      militarRepository,
+      postoGraduacaoRepository,
+      mockHasher
+    );
 
     const criarPosto = new CriarPostoGraduacaoCommand(postoGraduacaoRepository);
     postoId = (await criarPosto.execute({ abreviatura: "Cel", ordem: 1 })).id;
@@ -45,6 +49,20 @@ describe("BuscarMilitarPorIdQuery", () => {
     expect(result.rg).toBe(42);
     expect(result.nome).toBe("Pedro Alves");
     expect(result.perfil).toBe(Perfil.Chefe);
+  });
+
+  it("não expõe a senha na projeção de leitura", async () => {
+    const created = await createCommand.execute({
+      rg: 7,
+      nome: "Ivo Mendes",
+      perfil: Perfil.ACA,
+      postoGraduacaoId: postoId,
+      senha: "Senha@123",
+    });
+
+    const result = await query.execute({ id: created.id });
+
+    expect(result).not.toHaveProperty("senha");
   });
 
   it("rejeita ID inexistente", async () => {

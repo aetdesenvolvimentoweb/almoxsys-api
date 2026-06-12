@@ -46,6 +46,22 @@ export interface CriarMilitarInput {
 }
 
 /**
+ * Projeção de leitura de Militar, sem dados sensíveis.
+ *
+ * O hash da senha jamais cruza a fronteira da aplicação: as queries retornam
+ * esta projeção, tornando o vazamento impossível por construção (e não por
+ * disciplina de sanitização na camada HTTP).
+ */
+export type MilitarView = Omit<Militar, "senha">;
+
+/**
+ * Converte uma entidade Militar em sua projeção de leitura, removendo a senha.
+ */
+export function toMilitarView({ senha: _senha, ...rest }: Militar): MilitarView {
+  return rest;
+}
+
+/**
  * Cria uma nova entidade Militar com validações de domínio.
  *
  * @throws {ValidationError} se rg estiver fora do intervalo 1–99999
