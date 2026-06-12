@@ -10,7 +10,14 @@ import { errorHandler } from "@infra/http/error-handler.middleware";
 import { createAuthRoutes } from "@infra/http/v1/auth.routes";
 import { createMilitarRoutes } from "@infra/http/v1/militar.routes";
 import { createPostoGraduacaoRoutes } from "@infra/http/v1/posto-graduacao.routes";
-import { getAccessTokenTtl, getJwtSecret, getRefreshTokenTtl, getServerPort } from "@shared/config";
+import { bootstrapAdmin } from "@infra/seed/bootstrap-admin";
+import {
+  getAccessTokenTtl,
+  getBootstrapAdmin,
+  getJwtSecret,
+  getRefreshTokenTtl,
+  getServerPort,
+} from "@shared/config";
 
 const app = new OpenAPIHono();
 
@@ -55,6 +62,11 @@ const militarRoutes = createMilitarRoutes(
 app.route("/api/v1", authRoutes);
 app.route("/api/v1", postoGraduacaoRoutes);
 app.route("/api/v1", militarRoutes);
+
+await bootstrapAdmin(
+  { militarRepository, postoGraduacaoRepository, hasher, logger },
+  getBootstrapAdmin()
+);
 
 export { app };
 

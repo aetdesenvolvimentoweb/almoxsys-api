@@ -35,3 +35,25 @@ export function getRefreshTokenTtl(): number {
   const ttl = process.env["JWT_REFRESH_TTL"];
   return ttl ? parseInt(ttl, 10) : 7 * 24 * 60 * 60;
 }
+
+export interface BootstrapAdminConfig {
+  rg: number;
+  nome: string;
+  senha: string;
+}
+
+/**
+ * Dados do Administrador inicial, criados no startup quando ainda não há
+ * nenhum militar. Retorna null se as variáveis ADMIN_* não estiverem completas.
+ */
+export function getBootstrapAdmin(): BootstrapAdminConfig | null {
+  const rg = process.env["ADMIN_RG"];
+  const nome = process.env["ADMIN_NOME"];
+  const senha = process.env["ADMIN_SENHA"];
+
+  if (!rg || !nome || !senha) {
+    return null;
+  }
+
+  return { rg: parseInt(rg, 10), nome, senha };
+}
