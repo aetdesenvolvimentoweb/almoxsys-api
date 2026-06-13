@@ -55,6 +55,7 @@ Cruze com a memória `seguranca-owasp-pendencias` e aponte regressões ou novos 
 
 - **TSDoc** presente e útil (o *porquê*, não o *quê*) em ports, entidades, erros tipados e DTOs públicos.
 - **OpenAPI**: toda rota nova tem `summary`, `tags` e schemas de request/response; o schema Zod é a fonte única (sem duplicar validação).
+- **Descrição × comportamento**: cruze o `description`/`summary` de cada rota com a regra de RBAC realmente aplicada no use case/policy. Uma descrição que promete uma restrição mais (ou menos) estrita do que o código aplica é uma inconsistência a reportar.
 - `CLAUDE.md` e `REQUISITOS.md` continuam coerentes com o que foi construído; `.env.example` reflete novas variáveis.
 
 ## 6. Atualização da memória
