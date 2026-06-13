@@ -15,4 +15,12 @@ export class RefreshTokenInMemoryRepository implements IRefreshTokenRepository {
   async revogar(tokenHash: string): Promise<void> {
     this.store.delete(tokenHash);
   }
+
+  async revogarPorMilitar(militarId: string): Promise<void> {
+    for (const [hash, token] of this.store) {
+      if (token.militarId === militarId) {
+        this.store.delete(hash);
+      }
+    }
+  }
 }

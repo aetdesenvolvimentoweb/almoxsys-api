@@ -22,4 +22,10 @@ export interface IRefreshTokenRepository {
    * Revoga (remove) um refresh token pelo hash. Idempotente.
    */
   revogar(tokenHash: string): Promise<void>;
+
+  /**
+   * Revoga todas as sessões de um militar. Usado quando a senha muda, para
+   * invalidar sessões abertas com a credencial anterior. Idempotente.
+   */
+  revogarPorMilitar(militarId: string): Promise<void>;
 }

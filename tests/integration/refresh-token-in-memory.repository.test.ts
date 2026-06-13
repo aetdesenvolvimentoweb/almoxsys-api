@@ -36,4 +36,27 @@ describe("RefreshTokenInMemoryRepository", () => {
     await repository.revogar("nao-existe");
     expect(await repository.buscarPorHash("nao-existe")).toBeNull();
   });
+
+  it("revoga todas as sessões de um militar, preservando as dos demais", async () => {
+    await repository.salvar(
+      criarRefreshToken({ militarId: "m1", tokenHash: "hash-a", ttlSeconds: 3600 })
+    );
+    await repository.salvar(
+      criarRefreshToken({ militarId: "m1", tokenHash: "hash-b", ttlSeconds: 3600 })
+    );
+    await repository.salvar(
+      criarRefreshToken({ militarId: "m2", tokenHash: "hash-c", ttlSeconds: 3600 })
+    );
+
+    await repository.revogarPorMilitar("m1");
+
+    expect(await repository.buscarPorHash("hash-a")).toBeNull();
+    expect(await repository.buscarPorHash("hash-b")).toBeNull();
+    expect(await repository.buscarPorHash("hash-c")).not.toBeNull();
+  });
+
+  it("revogarPorMilitar é idempotente para militar sem sessões", async () => {
+    await repository.revogarPorMilitar("inexistente");
+    expect(await repository.buscarPorHash("qualquer")).toBeNull();
+  });
 });
