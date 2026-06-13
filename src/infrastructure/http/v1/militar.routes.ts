@@ -19,6 +19,7 @@ const MilitarSchema = z.object({
   id: z.string().uuid(),
   rg: z.number().int().min(1).max(99999),
   nome: z.string(),
+  email: z.string().email(),
   perfil: PerfilSchema,
   postoGraduacaoId: z.string().uuid(),
 });
@@ -26,6 +27,7 @@ const MilitarSchema = z.object({
 const CriarMilitarSchema = z.object({
   rg: z.number().int().min(1).max(99999),
   nome: z.string().min(2).max(100),
+  email: z.string().email().max(254),
   perfil: PerfilSchema,
   postoGraduacaoId: z.string().uuid(),
   senha: z.string().min(8).max(100),
@@ -35,6 +37,7 @@ const AtualizarMilitarSchema = z
   .object({
     rg: z.number().int().min(1).max(99999).optional(),
     nome: z.string().min(2).max(100).optional(),
+    email: z.string().email().max(254).optional(),
     perfil: PerfilSchema.optional(),
     postoGraduacaoId: z.string().uuid().optional(),
     senha: z.string().min(8).max(100).optional(),

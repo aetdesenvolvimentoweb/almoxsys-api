@@ -17,3 +17,12 @@ export class RgJaExisteError extends DuplicateKeyError {
     super("RG", rg.toString());
   }
 }
+
+/**
+ * Erro lançado quando tenta-se registrar um e-mail que já existe no sistema.
+ */
+export class EmailJaExisteError extends DuplicateKeyError {
+  constructor(email: string) {
+    super("E-mail", email);
+  }
+}

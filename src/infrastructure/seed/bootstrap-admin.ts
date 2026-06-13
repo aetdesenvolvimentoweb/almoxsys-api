@@ -48,6 +48,7 @@ export async function bootstrapAdmin(
   const militar = criarMilitar({
     rg: config.rg,
     nome: config.nome,
+    email: config.email,
     perfil: Perfil.Administrador,
     postoGraduacaoId: postoId,
     senha: senhaHash,

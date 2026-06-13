@@ -42,6 +42,13 @@ export interface IMilitarRepository {
   buscarPorRg(rg: number): Promise<Militar | null>;
 
   /**
+   * Busca um Militar pelo e-mail (comparação case-insensitive).
+   *
+   * @returns null se não encontrado
+   */
+  buscarPorEmail(email: string): Promise<Militar | null>;
+
+  /**
    * Lista todos os militares do sistema.
    */
   listar(): Promise<Militar[]>;

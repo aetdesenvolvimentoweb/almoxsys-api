@@ -52,6 +52,7 @@ describe("AutenticarMilitarCommand", () => {
         ator: { id: "seed", perfil: Perfil.Administrador },
         rg: 100,
         nome: "João Silva",
+        email: "joao.silva@cbm.br",
         perfil: Perfil.Almoxarife,
         postoGraduacaoId: postoId,
         senha: "Senha@123",

@@ -1,7 +1,13 @@
 import type { Ator } from "@core/domain/auth/ator";
 import { assertPodeGerenciarMilitar } from "@core/domain/auth/militar.policy";
-import { RgJaExisteError } from "@core/domain/errors/militar.errors";
-import { NOME_REGEX, type Perfil, Perfil as PerfilEnum } from "@core/domain/militar.entity";
+import { EmailJaExisteError, RgJaExisteError } from "@core/domain/errors/militar.errors";
+import {
+  EMAIL_REGEX,
+  NOME_REGEX,
+  normalizarEmail,
+  type Perfil,
+  Perfil as PerfilEnum,
+} from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
@@ -12,6 +18,7 @@ export interface AtualizarMilitarInput {
   id: string;
   rg?: number;
   nome?: string;
+  email?: string;
   perfil?: Perfil;
   postoGraduacaoId?: string;
   senha?: string;
@@ -25,7 +32,7 @@ export class AtualizarMilitarCommand {
   ) {}
 
   async execute(input: AtualizarMilitarInput): Promise<void> {
-    const { ator, id, rg, nome, perfil, postoGraduacaoId, senha } = input;
+    const { ator, id, rg, nome, email, perfil, postoGraduacaoId, senha } = input;
 
     const militar = await this.militarRepository.buscarPorId(id);
 
@@ -57,6 +64,17 @@ export class AtualizarMilitarCommand {
       }
     }
 
+    if (email !== undefined) {
+      const emailNormalizado = normalizarEmail(email);
+      if (!EMAIL_REGEX.test(emailNormalizado)) {
+        throw new ValidationError("E-mail inválido", { field: "email", value: email });
+      }
+      const outro = await this.militarRepository.buscarPorEmail(emailNormalizado);
+      if (outro && outro.id !== id) {
+        throw new EmailJaExisteError(emailNormalizado);
+      }
+    }
+
     if (perfil !== undefined) {
       const perfisValidos = Object.values(PerfilEnum) as string[];
       if (!perfisValidos.includes(perfil)) {
@@ -77,6 +95,7 @@ export class AtualizarMilitarCommand {
       ...militar,
       ...(rg !== undefined && { rg }),
       ...(nome !== undefined && { nome: nome.trim() }),
+      ...(email !== undefined && { email: normalizarEmail(email) }),
       ...(perfil !== undefined && { perfil }),
       ...(postoGraduacaoId !== undefined && { postoGraduacaoId }),
       ...(senhaHash !== undefined && { senha: senhaHash }),

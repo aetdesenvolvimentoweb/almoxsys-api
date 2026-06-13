@@ -3,13 +3,17 @@ import { AtualizarMilitarCommand } from "@core/application/commands/atualizar-mi
 import { CriarMilitarCommand } from "@core/application/commands/criar-militar.command";
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
 import type { Ator } from "@core/domain/auth/ator";
-import { MilitarNaoEncontradoError, RgJaExisteError } from "@core/domain/errors/militar.errors";
+import {
+  EmailJaExisteError,
+  MilitarNaoEncontradoError,
+  RgJaExisteError,
+} from "@core/domain/errors/militar.errors";
 import { PostoGraduacaoNaoEncontradoError } from "@core/domain/errors/posto-graduacao.errors";
 import { Perfil } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import { MilitarInMemoryRepository } from "@infra/adapters/militar-in-memory.repository";
 import { PostoGraduacaoInMemoryRepository } from "@infra/adapters/posto-graduacao-in-memory.repository";
-import { ForbiddenError } from "@shared/errors";
+import { ForbiddenError, ValidationError } from "@shared/errors";
 
 const mockHasher: IHasher = {
   hash: async (plain) => `hashed:${plain}`,
@@ -48,6 +52,7 @@ describe("AtualizarMilitarCommand", () => {
         ator: admin,
         rg: 100,
         nome: "João Silva",
+        email: "joao.silva@cbm.br",
         perfil: Perfil.Almoxarife,
         postoGraduacaoId: postoId,
         senha: "Senha@123",
@@ -68,6 +73,42 @@ describe("AtualizarMilitarCommand", () => {
 
     const atualizado = await militarRepository.buscarPorId(militarId);
     expect(atualizado.rg).toBe(200);
+  });
+
+  it("atualiza email com sucesso (normalizado)", async () => {
+    await updateCommand.execute({ ator: admin, id: militarId, email: "  NOVO@cbm.br " });
+
+    const atualizado = await militarRepository.buscarPorId(militarId);
+    expect(atualizado.email).toBe("novo@cbm.br");
+  });
+
+  it("rejeita email com formato inválido", () => {
+    expect(
+      updateCommand.execute({ ator: admin, id: militarId, email: "invalido" })
+    ).rejects.toThrow(ValidationError);
+  });
+
+  it("rejeita email já usado por outro militar", async () => {
+    await createCommand.execute({
+      ator: admin,
+      rg: 300,
+      nome: "Outro Militar",
+      email: "ocupado@cbm.br",
+      perfil: Perfil.ACA,
+      postoGraduacaoId: postoId,
+      senha: "Senha@123",
+    });
+
+    expect(
+      updateCommand.execute({ ator: admin, id: militarId, email: "OCUPADO@cbm.br" })
+    ).rejects.toThrow(EmailJaExisteError);
+  });
+
+  it("permite manter o mesmo email do próprio militar", async () => {
+    await updateCommand.execute({ ator: admin, id: militarId, email: "joao.silva@cbm.br" });
+
+    const atualizado = await militarRepository.buscarPorId(militarId);
+    expect(atualizado.email).toBe("joao.silva@cbm.br");
   });
 
   it("atualiza perfil com sucesso", async () => {
@@ -132,6 +173,7 @@ describe("AtualizarMilitarCommand", () => {
       ator: admin,
       rg: 999,
       nome: "Maria Santos",
+      email: "maria.santos@cbm.br",
       perfil: Perfil.ACA,
       postoGraduacaoId: postoId,
       senha: "Senha@123",

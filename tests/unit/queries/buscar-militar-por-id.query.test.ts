@@ -42,6 +42,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       ator: admin,
       rg: 42,
       nome: "Pedro Alves",
+      email: "pedro.alves@cbm.br",
       perfil: Perfil.Chefe,
       postoGraduacaoId: postoId,
       senha: "Senha@123",
@@ -52,6 +53,7 @@ describe("BuscarMilitarPorIdQuery", () => {
     expect(result.id).toBe(created.id);
     expect(result.rg).toBe(42);
     expect(result.nome).toBe("Pedro Alves");
+    expect(result.email).toBe("pedro.alves@cbm.br");
     expect(result.perfil).toBe(Perfil.Chefe);
   });
 
@@ -60,6 +62,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       ator: admin,
       rg: 7,
       nome: "Ivo Mendes",
+      email: "ivo.mendes@cbm.br",
       perfil: Perfil.ACA,
       postoGraduacaoId: postoId,
       senha: "Senha@123",
@@ -81,6 +84,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       ator: admin,
       rg: 1,
       nome: "Ana Lima",
+      email: "ana.lima@cbm.br",
       perfil: Perfil.ACA,
       postoGraduacaoId: postoId,
       senha: "Senha@123",
@@ -90,6 +94,7 @@ describe("BuscarMilitarPorIdQuery", () => {
         ator: admin,
         rg: 2,
         nome: "Bruno Melo",
+        email: "bruno.melo@cbm.br",
         perfil: Perfil.Almoxarife,
         postoGraduacaoId: postoId,
         senha: "Senha@123",
@@ -99,6 +104,7 @@ describe("BuscarMilitarPorIdQuery", () => {
       ator: admin,
       rg: 3,
       nome: "Carla Nunes",
+      email: "carla.nunes@cbm.br",
       perfil: Perfil.Chefe,
       postoGraduacaoId: postoId,
       senha: "Senha@123",

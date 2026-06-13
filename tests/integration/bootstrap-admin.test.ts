@@ -30,7 +30,12 @@ describe("bootstrapAdmin", () => {
   });
 
   it("cria o Administrador inicial quando não há militares", async () => {
-    await bootstrapAdmin(deps, { rg: 1, nome: "Admin", senha: "Segredo@123" });
+    await bootstrapAdmin(deps, {
+      rg: 1,
+      nome: "Admin",
+      email: "admin@cbm.br",
+      senha: "Segredo@123",
+    });
 
     const militares = await militarRepository.listar();
     expect(militares).toHaveLength(1);
@@ -40,7 +45,12 @@ describe("bootstrapAdmin", () => {
   });
 
   it("cria um posto/graduação padrão quando não existe nenhum", async () => {
-    await bootstrapAdmin(deps, { rg: 1, nome: "Admin", senha: "Segredo@123" });
+    await bootstrapAdmin(deps, {
+      rg: 1,
+      nome: "Admin",
+      email: "admin@cbm.br",
+      senha: "Segredo@123",
+    });
 
     const postos = await postoGraduacaoRepository.listar();
     expect(postos).toHaveLength(1);
@@ -56,12 +66,18 @@ describe("bootstrapAdmin", () => {
       id: "existente",
       rg: 50,
       nome: "Já Existe",
+      email: "ja.existe@cbm.br",
       perfil: Perfil.Chefe,
       postoGraduacaoId: "p1",
       senha: "x",
     });
 
-    await bootstrapAdmin(deps, { rg: 1, nome: "Admin", senha: "Segredo@123" });
+    await bootstrapAdmin(deps, {
+      rg: 1,
+      nome: "Admin",
+      email: "admin@cbm.br",
+      senha: "Segredo@123",
+    });
 
     const militares = await militarRepository.listar();
     expect(militares).toHaveLength(1);
@@ -69,7 +85,12 @@ describe("bootstrapAdmin", () => {
   });
 
   it("reutiliza um posto/graduação existente em vez de criar outro", async () => {
-    await bootstrapAdmin(deps, { rg: 1, nome: "Admin", senha: "Segredo@123" });
+    await bootstrapAdmin(deps, {
+      rg: 1,
+      nome: "Admin",
+      email: "admin@cbm.br",
+      senha: "Segredo@123",
+    });
     const militar = (await militarRepository.listar()).at(0);
     const posto = (await postoGraduacaoRepository.listar()).at(0);
     expect(militar?.postoGraduacaoId).toBe(posto?.id as string);

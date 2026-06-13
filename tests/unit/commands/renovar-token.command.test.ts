@@ -22,6 +22,7 @@ describe("RenovarTokenCommand", () => {
     id: "militar-1",
     rg: 100,
     nome: "João",
+    email: "joao@cbm.br",
     perfil: Perfil.Chefe,
     postoGraduacaoId: "posto-1",
     senha: "hash",

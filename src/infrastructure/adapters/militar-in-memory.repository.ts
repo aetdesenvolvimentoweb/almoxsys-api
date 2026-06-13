@@ -1,5 +1,5 @@
 import { MilitarNaoEncontradoError } from "@core/domain/errors/militar.errors";
-import type { Militar } from "@core/domain/militar.entity";
+import { type Militar, normalizarEmail } from "@core/domain/militar.entity";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 
 export class MilitarInMemoryRepository implements IMilitarRepository {
@@ -34,6 +34,12 @@ export class MilitarInMemoryRepository implements IMilitarRepository {
   async buscarPorRg(rg: number): Promise<Militar | null> {
     const militares = Array.from(this.store.values());
     return militares.find((m) => m.rg === rg) ?? null;
+  }
+
+  async buscarPorEmail(email: string): Promise<Militar | null> {
+    const alvo = normalizarEmail(email);
+    const militares = Array.from(this.store.values());
+    return militares.find((m) => m.email === alvo) ?? null;
   }
 
   async listar(): Promise<Militar[]> {

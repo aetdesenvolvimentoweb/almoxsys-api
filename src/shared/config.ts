@@ -76,6 +76,7 @@ export function getAuthRateLimit(): { max: number; windowMs: number } {
 export interface BootstrapAdminConfig {
   rg: number;
   nome: string;
+  email: string;
   senha: string;
 }
 
@@ -86,11 +87,12 @@ export interface BootstrapAdminConfig {
 export function getBootstrapAdmin(): BootstrapAdminConfig | null {
   const rg = process.env["ADMIN_RG"];
   const nome = process.env["ADMIN_NOME"];
+  const email = process.env["ADMIN_EMAIL"];
   const senha = process.env["ADMIN_SENHA"];
 
-  if (!rg || !nome || !senha) {
+  if (!rg || !nome || !email || !senha) {
     return null;
   }
 
-  return { rg: parseInt(rg, 10), nome, senha };
+  return { rg: parseInt(rg, 10), nome, email, senha };
 }
