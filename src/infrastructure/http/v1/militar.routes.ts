@@ -196,7 +196,8 @@ export function createMilitarRoutes(
     path: "/militares/:id",
     tags: ["Militar"],
     summary: "Remove um militar do sistema",
-    description: "Apenas Administradores podem excluir militares",
+    description:
+      "Segue a matriz de gerenciamento: Administradores excluem qualquer militar; Chefes excluem apenas Almoxarifes e ACAs",
     request: { params: IdParamSchema },
     responses: {
       204: { description: "Militar excluído com sucesso" },
