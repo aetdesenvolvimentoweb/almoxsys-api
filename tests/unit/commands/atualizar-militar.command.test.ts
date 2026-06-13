@@ -136,6 +136,12 @@ describe("AtualizarMilitarCommand", () => {
     expect(atualizado.senha).not.toBe("NovaSenha@456");
   });
 
+  it("rejeita senha que não atende à política", () => {
+    expect(
+      updateCommand.execute({ ator: admin, id: militarId, senha: "semespecial1" })
+    ).rejects.toThrow(ValidationError);
+  });
+
   it("não altera a senha quando não informada na atualização", async () => {
     const antes = await militarRepository.buscarPorId(militarId);
     await updateCommand.execute({ ator: admin, id: militarId, nome: "João Pedro Silva" });

@@ -1,5 +1,5 @@
 import { CriarPostoGraduacaoCommand } from "@core/application/commands/criar-posto-graduacao.command";
-import { criarMilitar, Perfil } from "@core/domain/militar.entity";
+import { criarMilitar, Perfil, validarSenha } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import type { ILogger } from "@core/ports/logger.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
@@ -44,6 +44,7 @@ export async function bootstrapAdmin(
     postoId = (await criarPosto.execute({ abreviatura: "Cmt", ordem: 1 })).id;
   }
 
+  validarSenha(config.senha);
   const senhaHash = await hasher.hash(config.senha);
   const militar = criarMilitar({
     rg: config.rg,

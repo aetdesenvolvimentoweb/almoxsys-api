@@ -82,6 +82,20 @@ describe("CriarMilitarCommand", () => {
     ).rejects.toThrow(ValidationError);
   });
 
+  it("rejeita senha que não atende à política", () => {
+    expect(
+      command.execute({
+        ator: admin,
+        rg: 79,
+        nome: "Senha Fraca",
+        email: "senha.fraca@cbm.br",
+        perfil: Perfil.ACA,
+        postoGraduacaoId: postoId,
+        senha: "semespecial1",
+      })
+    ).rejects.toThrow(ValidationError);
+  });
+
   it("armazena a senha como hash, não como texto puro", async () => {
     const result = await command.execute({
       ator: admin,

@@ -7,6 +7,7 @@ import {
   normalizarEmail,
   type Perfil,
   Perfil as PerfilEnum,
+  validarSenha,
 } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
@@ -89,6 +90,9 @@ export class AtualizarMilitarCommand {
       await this.postoGraduacaoRepository.buscarPorId(postoGraduacaoId);
     }
 
+    if (senha !== undefined) {
+      validarSenha(senha);
+    }
     const senhaHash = senha !== undefined ? await this.hasher.hash(senha) : undefined;
 
     const atualizado = {

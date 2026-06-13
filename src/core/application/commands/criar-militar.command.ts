@@ -1,7 +1,7 @@
 import type { Ator } from "@core/domain/auth/ator";
 import { assertPodeGerenciarMilitar } from "@core/domain/auth/militar.policy";
 import { EmailJaExisteError, RgJaExisteError } from "@core/domain/errors/militar.errors";
-import { criarMilitar, type Perfil } from "@core/domain/militar.entity";
+import { criarMilitar, type Perfil, validarSenha } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
@@ -43,6 +43,7 @@ export class CriarMilitarCommand {
       throw new EmailJaExisteError(dados.email);
     }
 
+    validarSenha(dados.senha);
     const senhaHash = await this.hasher.hash(dados.senha);
     const militar = criarMilitar({ ...dados, senha: senhaHash });
     await this.militarRepository.criar(militar);

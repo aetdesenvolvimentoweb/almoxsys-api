@@ -3,7 +3,7 @@ import { CriarMilitarCommand } from "@core/application/commands/criar-militar.co
 import { ExcluirMilitarCommand } from "@core/application/commands/excluir-militar.command";
 import { BuscarMilitarPorIdQuery } from "@core/application/queries/buscar-militar-por-id.query";
 import { ListarMilitaresQuery } from "@core/application/queries/listar-militares.query";
-import { Perfil } from "@core/domain/militar.entity";
+import { Perfil, SENHA_REGEX } from "@core/domain/militar.entity";
 import type { IHasher } from "@core/ports/hasher.port";
 import type { ILogger } from "@core/ports/logger.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
@@ -14,6 +14,11 @@ import { type AuthVariables, createAuthMiddleware } from "@infra/http/auth.middl
 import { z } from "zod";
 
 const PerfilSchema = z.enum([Perfil.Administrador, Perfil.Chefe, Perfil.Almoxarife, Perfil.ACA]);
+
+const SENHA_MENSAGEM =
+  "Senha fraca: use 8 a 100 caracteres com ao menos uma maiúscula, uma minúscula, um número e um caractere especial";
+
+const SenhaSchema = z.string().min(8).max(100).regex(SENHA_REGEX, { message: SENHA_MENSAGEM });
 
 const MilitarSchema = z.object({
   id: z.string().uuid(),
@@ -30,7 +35,7 @@ const CriarMilitarSchema = z.object({
   email: z.string().email().max(254),
   perfil: PerfilSchema,
   postoGraduacaoId: z.string().uuid(),
-  senha: z.string().min(8).max(100),
+  senha: SenhaSchema,
 });
 
 const AtualizarMilitarSchema = z
@@ -40,7 +45,7 @@ const AtualizarMilitarSchema = z
     email: z.string().email().max(254).optional(),
     perfil: PerfilSchema.optional(),
     postoGraduacaoId: z.string().uuid().optional(),
-    senha: z.string().min(8).max(100).optional(),
+    senha: SenhaSchema.optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser informado para atualização",

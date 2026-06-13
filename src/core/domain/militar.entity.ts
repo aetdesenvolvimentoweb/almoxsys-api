@@ -34,6 +34,35 @@ export function normalizarEmail(email: string): string {
 }
 
 /**
+ * Conjunto de caracteres especiais aceitos na senha. Restrito a símbolos
+ * "não comprometedores" — evita aspas, barras e sinais de markup que poderiam
+ * complicar escaping em camadas externas.
+ */
+export const SENHA_ESPECIAIS = "!@#$%^&*()-_=+.,;:?";
+
+/**
+ * Política de senha (OWASP A07): 8 a 100 caracteres com ao menos uma letra
+ * maiúscula, uma minúscula, um número e um caractere especial do conjunto
+ * {@link SENHA_ESPECIAIS}. Fonte única usada pelo domínio e pelos schemas HTTP.
+ */
+export const SENHA_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()\-_=+.,;:?]).{8,100}$/;
+
+/**
+ * Valida uma senha em texto puro contra a política. Nunca inclui o valor da
+ * senha em detalhes de erro — apenas o campo.
+ *
+ * @throws {ValidationError} se a senha não atender à política.
+ */
+export function validarSenha(senha: string): void {
+  if (!SENHA_REGEX.test(senha ?? "")) {
+    throw new ValidationError(
+      "Senha fraca: use 8 a 100 caracteres com ao menos uma maiúscula, uma minúscula, um número e um caractere especial",
+      { field: "senha" }
+    );
+  }
+}
+
+/**
  * Representa um militar usuário do sistema.
  *
  * @property id - Identificador único gerado pelo sistema (UUID).
