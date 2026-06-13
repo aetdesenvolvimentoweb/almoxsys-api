@@ -112,6 +112,21 @@ describe("CriarMilitarCommand", () => {
     expect(criado.senha).not.toBe("Senha@123");
   });
 
+  it("marca a senha como provisória (deveTrocarSenha) ao criar", async () => {
+    const result = await command.execute({
+      ator: admin,
+      rg: 1,
+      nome: "João Silva",
+      email: "joao@cbm.br",
+      perfil: Perfil.Almoxarife,
+      postoGraduacaoId: postoId,
+      senha: "Senha@123",
+    });
+
+    const criado = await militarRepository.buscarPorId(result.id);
+    expect(criado.deveTrocarSenha).toBe(true);
+  });
+
   it("Chefe não pode criar Administrador", () => {
     const chefe: Ator = { id: "chefe-id", perfil: Perfil.Chefe };
     expect(

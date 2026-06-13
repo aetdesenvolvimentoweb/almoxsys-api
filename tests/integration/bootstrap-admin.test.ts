@@ -70,6 +70,7 @@ describe("bootstrapAdmin", () => {
       perfil: Perfil.Chefe,
       postoGraduacaoId: "p1",
       senha: "x",
+      deveTrocarSenha: false,
     });
 
     await bootstrapAdmin(deps, {

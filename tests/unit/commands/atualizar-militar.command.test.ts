@@ -33,11 +33,7 @@ describe("AtualizarMilitarCommand", () => {
   beforeEach(async () => {
     militarRepository = new MilitarInMemoryRepository();
     postoGraduacaoRepository = new PostoGraduacaoInMemoryRepository();
-    updateCommand = new AtualizarMilitarCommand(
-      militarRepository,
-      postoGraduacaoRepository,
-      mockHasher
-    );
+    updateCommand = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository);
     createCommand = new CriarMilitarCommand(
       militarRepository,
       postoGraduacaoRepository,
@@ -128,21 +124,7 @@ describe("AtualizarMilitarCommand", () => {
     expect(atualizado.postoGraduacaoId).toBe(novoPostoId);
   });
 
-  it("atualiza senha e armazena o hash", async () => {
-    await updateCommand.execute({ ator: admin, id: militarId, senha: "NovaSenha@456" });
-
-    const atualizado = await militarRepository.buscarPorId(militarId);
-    expect(atualizado.senha).toBe("hashed:NovaSenha@456");
-    expect(atualizado.senha).not.toBe("NovaSenha@456");
-  });
-
-  it("rejeita senha que não atende à política", () => {
-    expect(
-      updateCommand.execute({ ator: admin, id: militarId, senha: "semespecial1" })
-    ).rejects.toThrow(ValidationError);
-  });
-
-  it("não altera a senha quando não informada na atualização", async () => {
+  it("não altera a senha na atualização administrativa", async () => {
     const antes = await militarRepository.buscarPorId(militarId);
     await updateCommand.execute({ ator: admin, id: militarId, nome: "João Pedro Silva" });
 

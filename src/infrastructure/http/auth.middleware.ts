@@ -1,6 +1,7 @@
 import type { Ator } from "@core/domain/auth/ator";
+import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { ITokenService } from "@core/ports/token.port";
-import { UnauthorizedError } from "@shared/errors";
+import { ForbiddenError, UnauthorizedError } from "@shared/errors";
 import type { Context, Next } from "hono";
 
 /**
@@ -29,6 +30,27 @@ export function createAuthMiddleware(tokenService: ITokenService) {
     const payload = await tokenService.verify(token);
 
     c.set("ator", { id: payload.sub, perfil: payload.perfil });
+    await next();
+  };
+}
+
+/**
+ * Bloqueia o acesso enquanto o militar tiver senha provisória.
+ *
+ * Lê o estado atual do repositório (não do token) a cada requisição, de modo que
+ * o desbloqueio é imediato após a troca, sem depender da expiração do access
+ * token. Deve ser aplicado após {@link createAuthMiddleware} e em todas as rotas
+ * protegidas, exceto a própria troca de senha.
+ *
+ * @throws {ForbiddenError} se o militar ainda precisa definir sua senha
+ */
+export function exigirSenhaDefinitiva(militarRepository: IMilitarRepository) {
+  return async (c: Context<{ Variables: AuthVariables }>, next: Next) => {
+    const ator = c.get("ator");
+    const militar = await militarRepository.buscarPorId(ator.id);
+    if (militar.deveTrocarSenha) {
+      throw new ForbiddenError("Troca de senha obrigatória antes de prosseguir");
+    }
     await next();
   };
 }

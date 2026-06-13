@@ -10,7 +10,11 @@ import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
 import type { ITokenService } from "@core/ports/token.port";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { type AuthVariables, createAuthMiddleware } from "@infra/http/auth.middleware";
+import {
+  type AuthVariables,
+  createAuthMiddleware,
+  exigirSenhaDefinitiva,
+} from "@infra/http/auth.middleware";
 import { z } from "zod";
 
 const PerfilSchema = z.enum([Perfil.Administrador, Perfil.Chefe, Perfil.Almoxarife, Perfil.ACA]);
@@ -27,6 +31,7 @@ const MilitarSchema = z.object({
   email: z.string().email(),
   perfil: PerfilSchema,
   postoGraduacaoId: z.string().uuid(),
+  deveTrocarSenha: z.boolean(),
 });
 
 const CriarMilitarSchema = z.object({
@@ -45,7 +50,6 @@ const AtualizarMilitarSchema = z
     email: z.string().email().max(254).optional(),
     perfil: PerfilSchema.optional(),
     postoGraduacaoId: z.string().uuid().optional(),
-    senha: SenhaSchema.optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Pelo menos um campo deve ser informado para atualização",
@@ -65,6 +69,7 @@ export function createMilitarRoutes(
   const router = new OpenAPIHono<{ Variables: AuthVariables }>();
 
   router.use(createAuthMiddleware(tokenService));
+  router.use(exigirSenhaDefinitiva(militarRepository));
 
   const criarRoute = createRoute({
     method: "post",
@@ -181,11 +186,7 @@ export function createMilitarRoutes(
     const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
-    const command = new AtualizarMilitarCommand(
-      militarRepository,
-      postoGraduacaoRepository,
-      hasher
-    );
+    const command = new AtualizarMilitarCommand(militarRepository, postoGraduacaoRepository);
     await command.execute({ ator, id, ...body });
     logger.info("militar.atualizado", { id, changes: Object.keys(body) });
     return c.json({ message: "Militar atualizado com sucesso" }, 200);

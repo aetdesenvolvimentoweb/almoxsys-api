@@ -26,6 +26,7 @@ describe("RenovarTokenCommand", () => {
     perfil: Perfil.Chefe,
     postoGraduacaoId: "posto-1",
     senha: "hash",
+    deveTrocarSenha: false,
   };
 
   beforeEach(async () => {

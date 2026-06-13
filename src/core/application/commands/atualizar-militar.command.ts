@@ -7,9 +7,7 @@ import {
   normalizarEmail,
   type Perfil,
   Perfil as PerfilEnum,
-  validarSenha,
 } from "@core/domain/militar.entity";
-import type { IHasher } from "@core/ports/hasher.port";
 import type { IMilitarRepository } from "@core/ports/militar.repository";
 import type { IPostoGraduacaoRepository } from "@core/ports/posto-graduacao.repository";
 import { ValidationError } from "@shared/errors";
@@ -22,18 +20,16 @@ export interface AtualizarMilitarInput {
   email?: string;
   perfil?: Perfil;
   postoGraduacaoId?: string;
-  senha?: string;
 }
 
 export class AtualizarMilitarCommand {
   constructor(
     private militarRepository: IMilitarRepository,
-    private postoGraduacaoRepository: IPostoGraduacaoRepository,
-    private hasher: IHasher
+    private postoGraduacaoRepository: IPostoGraduacaoRepository
   ) {}
 
   async execute(input: AtualizarMilitarInput): Promise<void> {
-    const { ator, id, rg, nome, email, perfil, postoGraduacaoId, senha } = input;
+    const { ator, id, rg, nome, email, perfil, postoGraduacaoId } = input;
 
     const militar = await this.militarRepository.buscarPorId(id);
 
@@ -90,11 +86,6 @@ export class AtualizarMilitarCommand {
       await this.postoGraduacaoRepository.buscarPorId(postoGraduacaoId);
     }
 
-    if (senha !== undefined) {
-      validarSenha(senha);
-    }
-    const senhaHash = senha !== undefined ? await this.hasher.hash(senha) : undefined;
-
     const atualizado = {
       ...militar,
       ...(rg !== undefined && { rg }),
@@ -102,7 +93,6 @@ export class AtualizarMilitarCommand {
       ...(email !== undefined && { email: normalizarEmail(email) }),
       ...(perfil !== undefined && { perfil }),
       ...(postoGraduacaoId !== undefined && { postoGraduacaoId }),
-      ...(senhaHash !== undefined && { senha: senhaHash }),
     };
 
     await this.militarRepository.atualizar(atualizado);

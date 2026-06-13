@@ -72,6 +72,10 @@ export function validarSenha(senha: string): void {
  * @property perfil - Nível de acesso ao sistema conforme matriz de permissões.
  * @property postoGraduacaoId - Referência ao posto/graduação hierárquico do militar.
  * @property senha - Hash Argon2id da senha. Nunca exposto nas respostas da API.
+ * @property deveTrocarSenha - Marca senha provisória definida por terceiro na
+ *   criação. Enquanto `true`, o acesso ao sistema é bloqueado até que o próprio
+ *   militar defina sua senha (OWASP A07 — credencial não deve permanecer conhecida
+ *   por quem criou a conta).
  */
 export interface Militar {
   id: string;
@@ -81,6 +85,7 @@ export interface Militar {
   perfil: Perfil;
   postoGraduacaoId: string;
   senha: string;
+  deveTrocarSenha: boolean;
 }
 
 export interface CriarMilitarInput {
@@ -154,5 +159,8 @@ export function criarMilitar(input: CriarMilitarInput): Militar {
     perfil,
     postoGraduacaoId,
     senha: input.senha,
+    // Senha definida por quem cria o militar é sempre provisória: o titular é
+    // obrigado a trocá-la no primeiro acesso.
+    deveTrocarSenha: true,
   };
 }
